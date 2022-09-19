@@ -1,0 +1,13 @@
+{
+  "type": "postgresql",
+  "host": "localhost",
+  "port": 3306,
+  "username": "shaunlyne",
+  "password": "test",
+  "database": "jhpe",
+  "synchronize": true,
+  "logging": false,
+  "entities": ["src/database/entity/**/*.ts"],
+  "migrations": ["src/database/migration/**/*.ts"],
+  "subscribers": ["src/database/subscriber/**/*.ts"]
+}

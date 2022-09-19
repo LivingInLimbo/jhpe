@@ -18,7 +18,6 @@ export const MobileHeader = () => {
   const [scrollState, setScrollState] = useState(0);
 
   const handleClick = () => {
-    console.log("lmfao");
     if (headerState) {
       document.body.style.position = "";
       document.body.style.top = "";

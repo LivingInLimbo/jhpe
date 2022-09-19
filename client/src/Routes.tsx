@@ -1,16 +1,26 @@
+import React from "react";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import CreateListing from "./pages/CreateListing";
 
 // Define different route list based on auth level
 // TODO: more user roles to be added
 
+type Route = {
+  path: string;
+  element: JSX.Element;
+  exact: boolean;
+};
+
 // Accessible by any roles
-export const NonAuthRoutes = [
+export const NonAuthRoutes: Route[] = [
   {
     path: "/home",
     element: <Home />,
     exact: true,
   },
-  /*{
+  {
     path: "/login",
     element: <Login />,
     exact: true,
@@ -20,23 +30,18 @@ export const NonAuthRoutes = [
     element: <Signup />,
     exact: true,
   },
-  {
-    path: "/sussy",
-    element: <SusPage />,
-    exact: true,
-  },
 
   // Add new here...*/
 ];
 
-export const ProtectedRoutes = [
+export const ProtectedRoutes: Route[] = [
   //Examples for routes that need authorization
   //To be replaced later
-  /*{
-    path: "/clothing",
-    element: <ViewClothing />,
+  {
+    path: "/new",
+    element: <CreateListing />,
     exact: true,
-  },
+  } /*
   {
     path: "/add",
     element: <EditClothing />,
@@ -121,5 +126,5 @@ export const ProtectedRoutes = [
     path: "/addWears",
     element: <AddWears />,
     exact: true,
-  },*/
+  },*/,
 ];

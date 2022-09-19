@@ -1,5 +1,6 @@
 import { Navigate, Route } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import React from "react";
 
 type props = {
   element: JSX.Element;
