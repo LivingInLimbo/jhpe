@@ -34,7 +34,6 @@ export const GoogleSignupLoginComponent = ({
   const [addUser, { loading, data, error: addUserError }] = useMutation(
     ADD_USER,
     {
-      ...optionsNoAuth,
       variables: { credential: credential },
     }
   );

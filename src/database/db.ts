@@ -1,5 +1,7 @@
 import { DataSource } from "typeorm";
 import { User } from "./entity/User";
+import { Category } from "./entity/Category";
+import { SubCategory } from "./entity/SubCategory";
 
 export const db = new DataSource({
   type: "postgres",
@@ -10,6 +12,6 @@ export const db = new DataSource({
   database: "jhpe",
   synchronize: true,
   logging: false,
-  entities: [User],
+  entities: [User, Category, SubCategory],
   migrations: ["dist/database/**/migration/*.js"],
 });

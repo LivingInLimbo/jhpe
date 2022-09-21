@@ -9,6 +9,11 @@ import { db } from "./database/db";
 import { User } from "./database/entity/User";
 import { config } from "./config";
 import { OAuth2Client } from "google-auth-library";
+import { categories } from "./helpers/categories";
+import { subcategories } from "./helpers/subcategories";
+import { Category } from "./database/entity/Category";
+import { SubCategory } from "./database/entity/SubCategory";
+import { checkAuth } from "./helpers/checkAuth";
 
 const client = new OAuth2Client(config.CLIENT_ID);
 
@@ -17,60 +22,38 @@ const PORT = 3001;
 
 app.use(cors());
 
-// Construct a schema, using GraphQL schema language
-var authSchema = buildSchema(`
+var nonAuthTypes = `
+type Category {
+  id: Int
+  name: String
+  urlName: String
+}`;
+
+var nonAuthQueries = `
+getCategories: [Category]
+`;
+
+var nonAuthMutations = `
+addUser(credential: String): String
+`;
+
+var nonAuthSchemaString = `
+
+  ${nonAuthTypes}
+
   type Query {
-    rollDice(numDice: Int!, numSides: Int): [Int]
+    ${nonAuthQueries}
   }
 
   type Mutation {
-    addUser: String
+    ${nonAuthMutations}
   }
-`);
+`;
 
-// The root provides a resolver function for each API endpoint
-var authRoot = {
-  rollDice: ({ numDice, numSides }: { numDice: number; numSides: number }) => {
-    var output = [];
-    for (var i = 0; i < numDice; i++) {
-      output.push(1 + Math.floor(Math.random() * (numSides || 6)));
-    }
-    return output;
-  },
-  addUser: async () => {
-    /*const res = await db
-      .createQueryBuilder()
-      .insert()
-      .into(User)
-      .values([
-        { firstName: "Timber", lastName: "Saw", isGold: false },
-        { firstName: "Phantom", lastName: "Lancer", isGold: false },
-      ])
-      .execute();
-    console.log(res);*/
-    return "lmfao";
-  },
-};
-
-var nonAuthSchema = buildSchema(`
-  type Query {
-    rollDice(numDice: Int!, numSides: Int): [Int]
-  }
-
-  type Mutation {
-    addUser(credential: String): String
-  }
-`);
+var nonAuthSchema = buildSchema(nonAuthSchemaString);
 
 // The root provides a resolver function for each API endpoint
 var nonAuthRoot = {
-  rollDice: ({ numDice, numSides }: { numDice: number; numSides?: number }) => {
-    var output = [];
-    for (var i = 0; i < numDice; i++) {
-      output.push(1 + Math.floor(Math.random() * (numSides || 6)));
-    }
-    return output;
-  },
   addUser: async ({ credential }: { credential: string }) => {
     const info = await client.verifyIdToken({
       idToken: credential,
@@ -111,28 +94,74 @@ var nonAuthRoot = {
       return token;
     }
   },
+  getCategories: async () => {
+    const categories = await db.getRepository(Category).find();
+    console.log(categories);
+    return categories;
+  },
 };
 
-app.use(express.static(path.resolve(__dirname, "../my-app/build")));
+var authQueries = `
+${nonAuthQueries}
+
+`;
+
+var authMutations = `
+${nonAuthMutations}
+`;
+
+var authSchemaString = `
+
+${nonAuthTypes}
+
+type Query {
+  ${authQueries}
+}
+`;
+
+// Construct a schema, using GraphQL schema language
+var authSchema = buildSchema(authSchemaString);
+
+// The root provides a resolver function for each API endpoint
+var authRoot = {
+  ...nonAuthRoot,
+  testQuery: ({ token }: { token: String }) => {
+    return "lmfao";
+  },
+};
+
+app.use(express.static(path.resolve(__dirname, "../client/build")));
 
 // All other GET requests not handled before will return our React app
 app.get("*", (req: Express.Request, res: Express.Response) => {
-  res.sendFile(path.resolve(__dirname, "../my-app/build", "index.html"));
+  res.sendFile(path.resolve(__dirname, "../client/build", "index.html"));
 });
 
-const susMiddleware = (
-  req: Express.Request,
-  res: Express.Response,
-  next: Express.NextFunction
-) => {
-  console.log("very sus middleware");
-  next();
-};
-
 db.initialize().then(async () => {
+  const manager = db.manager;
+  const count = await manager.count(Category);
+  if (count == 0) {
+    categories.forEach(async (category) => {
+      const subcategories = category.subcategories;
+      const newCategory = manager.create(Category, {
+        name: category.name,
+        urlName: category.urlName,
+      });
+      const insertedCategory = await manager.save(newCategory);
+      const id = insertedCategory.id;
+      const entities = subcategories.map((subcategory) =>
+        manager.create(SubCategory, {
+          ...subcategory,
+          category: insertedCategory,
+        })
+      );
+      await manager.save(entities);
+    });
+  }
+
   app.use(
     "/authGql",
-    susMiddleware,
+    checkAuth,
     graphqlHTTP({
       schema: authSchema,
       rootValue: authRoot,
