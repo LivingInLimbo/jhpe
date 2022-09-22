@@ -14,6 +14,7 @@ export const ErrorPage = ({ error = null }: props) => {
   const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState("");
+  console.log(error);
 
   useEffect(() => {
     if (error != null) {

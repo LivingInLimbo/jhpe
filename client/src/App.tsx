@@ -27,21 +27,16 @@ function App() {
   const [cookies, setCookie, removeCookie] = useCookies();
   const auth = cookies.userInfo !== undefined;
 
-  const authClient = new ApolloClient({
-    uri: `${homeUrl}/authGql`,
+  const client = new ApolloClient({
+    uri: `${homeUrl}/graphql`,
     cache: new InMemoryCache(),
     headers: {
       authorization: `Bearer ${cookies.userInfo}`,
     },
   });
 
-  const nonAuthClient = new ApolloClient({
-    uri: `${homeUrl}/noAuthGql`,
-    cache: new InMemoryCache(),
-  });
-
   return (
-    <ApolloProvider client={auth ? authClient : nonAuthClient}>
+    <ApolloProvider client={client}>
       <BrowserRouter>
         <ErrorBoundary FallbackComponent={ErrorPage}>
           <Routes>

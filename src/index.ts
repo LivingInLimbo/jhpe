@@ -1,4 +1,4 @@
-var express = require("express");
+/*var express = require("express");
 var { graphqlHTTP } = require("express-graphql");
 var { buildSchema } = require("graphql");
 const path = require("path");
@@ -102,21 +102,20 @@ var nonAuthRoot = {
 };
 
 var authQueries = `
-${nonAuthQueries}
 
 `;
 
 var authMutations = `
-${nonAuthMutations}
+
 `;
 
 var authSchemaString = `
 
-${nonAuthTypes}
-
 type Query {
-  ${authQueries}
+  testQuery: String
 }
+
+
 `;
 
 // Construct a schema, using GraphQL schema language
@@ -124,7 +123,6 @@ var authSchema = buildSchema(authSchemaString);
 
 // The root provides a resolver function for each API endpoint
 var authRoot = {
-  ...nonAuthRoot,
   testQuery: ({ token }: { token: String }) => {
     return "lmfao";
   },
@@ -162,11 +160,12 @@ db.initialize().then(async () => {
   app.use(
     "/authGql",
     checkAuth,
-    graphqlHTTP({
+    graphqlHTTP((req: Express.Request) => ({
       schema: authSchema,
       rootValue: authRoot,
       graphiql: true,
-    })
+      context: req.ReqBody
+    }))
   );
 
   app.use(
@@ -181,3 +180,162 @@ db.initialize().then(async () => {
   app.listen(PORT);
   console.log(`Running a GraphQL API server at localhost:${PORT}/graphql`);
 });
+*/
+
+const { ApolloServer, gql } = require("apollo-server-express");
+import {
+  ApolloServerExpressConfig,
+  AuthenticationError,
+} from "apollo-server-express";
+import express from "express";
+import Express from "express";
+import { DataSource } from "typeorm";
+import { db, dbConfig } from "./database/db";
+import { Category } from "./database/entity/Category";
+import { User } from "./database/entity/User";
+import { config } from "./config";
+const jwt = require("jsonwebtoken");
+import { OAuth2Client } from "google-auth-library";
+
+const client = new OAuth2Client(config.CLIENT_ID);
+
+// A schema is a collection of type definitions (hence "typeDefs")
+// that together define the "shape" of queries that are executed against
+// your data.
+const typeDefs = gql`
+  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
+
+  # This "Book" type defines the queryable fields for every book in our data source.
+  type Book {
+    title: String
+    author: String
+  }
+
+  type Category {
+    id: Int
+    name: String
+    urlName: String
+  }
+
+  # The "Query" type is special: it lists all of the available queries that
+  # clients can execute, along with the return type for each. In this
+  # case, the "books" query returns an array of zero or more Books (defined above).
+  type Query {
+    books: [Book]
+    getCategories: [Category]
+  }
+
+  type Mutation {
+    addUser(credential: String): String
+  }
+`;
+
+const books = [
+  {
+    title: "The Awakening",
+    author: "Kate Chopin",
+  },
+  {
+    title: "City of Glass",
+    author: "Paul Auster",
+  },
+];
+
+// Resolvers define the technique for fetching the types defined in the
+// schema. This resolver retrieves books from the "books" array above.
+const resolvers = {
+  Query: {
+    getCategories: async (
+      parent: undefined,
+      args: undefined,
+      context: { user: String }
+    ) => {
+      if (context.user) {
+        throw new AuthenticationError("gtfo KIDDO");
+      }
+      const categories = await db.getRepository(Category).find();
+      console.log(categories);
+      return categories;
+    },
+    books: () => books,
+  },
+  Mutation: {
+    addUser: async (
+      parent: undefined,
+      { credential }: { credential: string }
+    ) => {
+      const info = await client.verifyIdToken({
+        idToken: credential,
+        audience: config.CLIENT_ID,
+      });
+
+      const generateToken = (user: User) => {
+        const token = jwt.sign(
+          { email: user.email, userId: user.id },
+          config.JWT_KEY,
+          {
+            expiresIn: "12h",
+          }
+        );
+        return token;
+      };
+      const user = await db
+        .getRepository(User)
+        .createQueryBuilder("user")
+        .where("user.email = :email", { email: info.getPayload().email })
+        .getOne();
+
+      if (user) {
+        return generateToken(user);
+      } else {
+        const insert = await db
+          .createQueryBuilder()
+          .insert()
+          .into(User)
+          .values({ email: info.getPayload().email })
+          .execute();
+
+        const token = generateToken({
+          id: insert.identifiers[0].id,
+          email: info.getPayload().email,
+        });
+        return token;
+      }
+    },
+  },
+};
+
+export const checkAuth = (authHeader: String) => {
+  let userData;
+  try {
+    const decoded = jwt.verify(authHeader.split(" ")[1], config.JWT_KEY);
+    userData = decoded;
+  } catch (error) {
+    console.log(error);
+  }
+  return userData;
+};
+
+const startServer = async () => {
+  const app = express();
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    context: ({ req }: { req: Express.Request }) => {
+      const authHeader = req.headers.authorization || "";
+      const user = checkAuth(authHeader);
+      return { user };
+    },
+  });
+  await server.start();
+
+  await db.initialize();
+
+  server.applyMiddleware({ app });
+
+  app.listen({ port: 4000 }, () =>
+    console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
+  );
+};
+
+startServer();

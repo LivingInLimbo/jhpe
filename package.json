@@ -4,8 +4,11 @@
   "description": "",
   "main": "dist/index.js",
   "dependencies": {
+    "apollo-server": "^3.10.2",
+    "apollo-server-express": "^3.10.2",
     "class-validator": "^0.13.2",
     "cors": "^2.8.5",
+    "datasource-sql": "^2.0.1",
     "express": "^4.18.1",
     "express-graphql": "^0.12.0",
     "google-auth-library": "^8.5.1",
