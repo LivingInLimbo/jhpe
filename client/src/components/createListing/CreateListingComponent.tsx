@@ -13,7 +13,6 @@ export const CreateListingComponent = () => {
   `;
 
   const { data, loading, error } = useQuery(GET_CATEGORIES);
-  if (error) console.log(error);
   useErrorHandler(error);
   if (data) console.log(data);
 

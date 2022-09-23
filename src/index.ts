@@ -251,7 +251,7 @@ const resolvers = {
       context: { user: String }
     ) => {
       if (context.user) {
-        throw new AuthenticationError("gtfo KIDDO");
+        throw new AuthenticationError("gtfo KIDDO", { status: 401 });
       }
       const categories = await db.getRepository(Category).find();
       console.log(categories);

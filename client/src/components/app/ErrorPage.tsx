@@ -5,24 +5,21 @@ import { ColorButton } from "../forms/ColorButton";
 import { useNavigate } from "react-router-dom";
 import { Container } from "./Container";
 import { IoRefreshOutline } from "react-icons/io5";
+import { ApolloError } from "@apollo/client";
+import { ErrorBoundaryProps, FallbackProps } from "react-error-boundary";
+import { GraphQLError } from "graphql";
 
-type props = {
-  error: any;
-};
-
-export const ErrorPage = ({ error = null }: props) => {
+export const ErrorPage = ({ error }: any) => {
   const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);
-  const navigate = useNavigate();
-  const [errorMsg, setErrorMsg] = useState("");
-  console.log(error);
 
   useEffect(() => {
-    if (error != null) {
-      if (error.status == 401) {
-        removeCookie("userInfo", { path: "/" });
-      } else if (error.status) {
-        error.json().then((data: any) => setErrorMsg(data.message));
-      }
+    if (error.graphQLErrors) {
+      error.graphQLErrors.forEach((gqlError: GraphQLError) => {
+        console.log(gqlError);
+        if (gqlError.extensions.code == "UNAUTHENTICATED") {
+          removeCookie("userInfo", { path: "/" });
+        }
+      });
     }
   }, []);
 
@@ -34,35 +31,7 @@ export const ErrorPage = ({ error = null }: props) => {
     <Container>
       <div className="z-10 flex flex-col flex-grow w-full  justify-center items-center text-center font-light text-black text-xl">
         <span className="text-7xl font-bold mb-4 text-red-600">Error!</span>
-        {error ? (
-          error.status == 401 ? (
-            <div className="flex flex-col w-full justify-center">
-              <div>Session expired, please log in again.</div>
-              <div className="self-center mt-2">
-                <ColorButton
-                  label="Login"
-                  onClick={() => {
-                    removeCookie("userInfo", { path: "/" });
-                    navigate("/login");
-                  }}
-                />
-              </div>
-            </div>
-          ) : error.message != undefined ? ( // in the event of frontend JS errors
-            error.message
-          ) : error.status != undefined ? (
-            <div className="flex flex-col">
-              <span>
-                Error {error.status}, {error.statusText}
-              </span>
-              <span className="mt-0">{errorMsg}</span>
-            </div>
-          ) : (
-            "(No Error Message)"
-          )
-        ) : (
-          "Undefined Error"
-        )}
+        <div>{error.message}</div>
         <div className="flex items-center text-black mt-4">
           Try refreshing the page.
           <div
