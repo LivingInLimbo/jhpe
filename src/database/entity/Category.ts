@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  JoinColumn,
+} from "typeorm";
 import { SubCategory } from "./SubCategory";
+import { Listing } from "./Listing";
 
 @Entity()
 export class Category {
@@ -12,6 +19,11 @@ export class Category {
   @Column()
   urlName: string;
 
-  @OneToMany(() => SubCategory, (subcategory) => subcategory.id)
-  subcategory: SubCategory;
+  @OneToMany(() => SubCategory, (subcategory) => subcategory.category, {
+    eager: true,
+  })
+  subcategory: SubCategory[];
+
+  @OneToMany(() => Listing, (listing) => listing.id)
+  listing: Listing[];
 }

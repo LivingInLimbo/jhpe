@@ -1,23 +1,21 @@
 import React, { useState } from "react";
 import { useCookies } from "react-cookie";
 import { useEffect } from "react";
-import { ColorButton } from "../forms/ColorButton";
-import { useNavigate } from "react-router-dom";
 import { Container } from "./Container";
 import { IoRefreshOutline } from "react-icons/io5";
-import { ApolloError } from "@apollo/client";
-import { ErrorBoundaryProps, FallbackProps } from "react-error-boundary";
 import { GraphQLError } from "graphql";
+import { useNavigate } from "react-router";
 
 export const ErrorPage = ({ error }: any) => {
   const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (error.graphQLErrors) {
       error.graphQLErrors.forEach((gqlError: GraphQLError) => {
         console.log(gqlError);
         if (gqlError.extensions.code == "UNAUTHENTICATED") {
-          removeCookie("userInfo", { path: "/" });
+          removeCookie("userInfo", { domain: "", path: "/" });
         }
       });
     }

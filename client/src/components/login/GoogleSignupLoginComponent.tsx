@@ -47,7 +47,6 @@ export const GoogleSignupLoginComponent = ({
   useEffect(() => {
     if (data) {
       setCookie("userInfo", data.addUser, { path: "/" });
-      navigate("/new");
     }
   }, [data]);
 
@@ -58,7 +57,9 @@ export const GoogleSignupLoginComponent = ({
   if (loading) return <>loading</>;
   else if (error) return <>{error}</>;
 
-  return (
+  return cookies.userInfo !== undefined ? (
+    <Navigate to="/new" />
+  ) : (
     <GoogleOAuthProvider clientId="881162565258-uuumco442ojvsg1lhdt5bvosbuaf76qt.apps.googleusercontent.com">
       <div className="flex flex-col flex-grow w-full items-center justify-center">
         <div className="flex flex-col w-96 items-center rounded-md p-12">

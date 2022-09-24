@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { Listing } from "./Listing";
 
 @Entity()
 export class User {
@@ -19,4 +20,7 @@ export class User {
 
   @Column({ default: false })
   isGold?: boolean;
+
+  @OneToMany(() => Listing, (listing) => listing.id)
+  listing: Listing;
 }

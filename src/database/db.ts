@@ -2,6 +2,7 @@ import { DataSource } from "typeorm";
 import { User } from "./entity/User";
 import { Category } from "./entity/Category";
 import { SubCategory } from "./entity/SubCategory";
+import { Listing } from "./entity/Listing";
 import { PostgresConnectionOptions } from "typeorm/driver/postgres/PostgresConnectionOptions";
 
 export const dbConfig: PostgresConnectionOptions = {
@@ -13,7 +14,7 @@ export const dbConfig: PostgresConnectionOptions = {
   database: "jhpe",
   synchronize: true,
   logging: false,
-  entities: [User, Category, SubCategory],
+  entities: [User, Category, SubCategory, Listing],
 };
 
 export const db = new DataSource(dbConfig);

@@ -1,5 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from "typeorm";
 import { Category } from "./Category";
+import { Listing } from "./Listing";
 
 @Entity()
 export class SubCategory {
@@ -14,4 +22,7 @@ export class SubCategory {
 
   @ManyToOne(() => Category, (category) => category.id, { onDelete: "CASCADE" })
   category: Category;
+
+  @OneToMany(() => Listing, (listing) => listing.id)
+  listing: Listing;
 }

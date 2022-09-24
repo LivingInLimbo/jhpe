@@ -6,15 +6,22 @@ import { useErrorHandler } from "react-error-boundary";
 export const CreateListingComponent = () => {
   const GET_CATEGORIES = gql`
     query getCategories {
-      getCategories {
+      categories {
+        id
         name
+        urlName
+        subcategory {
+          id
+          name
+          urlName
+        }
       }
     }
   `;
 
-  const { data, loading, error } = useQuery(GET_CATEGORIES);
-  useErrorHandler(error);
-  if (data) console.log(data);
+  const categoryQuery = useQuery(GET_CATEGORIES);
+  useErrorHandler(categoryQuery.error);
+  if (categoryQuery.data) console.log(categoryQuery.data);
 
   return <div>lmfao</div>;
 };
