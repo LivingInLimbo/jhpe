@@ -5,7 +5,7 @@ export const LabledTextInput = ({
   className = "",
   label = "",
   value = "",
-  onChange = (event: any): null => null,
+  onChange = (event: any): void => {},
   name = "",
   type = "",
   placeholder = "",

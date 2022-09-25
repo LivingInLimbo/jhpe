@@ -1,5 +1,15 @@
 import React from "react";
 
+type props = {
+  type?: String;
+  className?: String;
+  height?: String;
+  onClick?: any;
+  label?: String;
+  disabled?: Boolean;
+  loading?: Boolean;
+};
+
 export const ColorButton = ({
   type = "",
   className = "",

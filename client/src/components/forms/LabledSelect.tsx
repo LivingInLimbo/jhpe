@@ -5,16 +5,16 @@ const inputClass =
   "shadow-sm cursor-pointer bg-white appearance-none  border border-gray-300 text-sm text-gray-700 rounded w-full py-2 px-3 font-light leading-tight focus:outline-none hover:border-gray-500 ";
 
 type props = {
-  className: string;
-  name: string;
+  className?: string;
+  name?: string;
   defaultValue?: string | number;
-  onChange: any;
-  disabled: boolean;
-  required: boolean;
+  onChange?: any;
+  disabled?: boolean;
+  required?: boolean;
   list: any[];
   valueId: string;
   nameId: string;
-  label: string;
+  label?: string;
 };
 
 export const LabledSelect = ({

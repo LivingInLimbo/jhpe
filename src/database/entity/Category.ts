@@ -24,6 +24,6 @@ export class Category {
   })
   subcategory: SubCategory[];
 
-  @OneToMany(() => Listing, (listing) => listing.id)
+  @OneToMany(() => Listing, (listing) => listing.category)
   listing: Listing[];
 }
