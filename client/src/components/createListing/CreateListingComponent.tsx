@@ -7,6 +7,7 @@ import { LabledTextInput } from "../forms/LabledTextInput";
 import { LabledSelect } from "../forms/LabledSelect";
 import { ColorButton } from "../forms/ColorButton";
 import { IoAdd } from "react-icons/io5";
+import { ImageCarousel } from "./ImageCarousel";
 
 export const CreateListingComponent = () => {
   const GET_CATEGORIES = gql`
@@ -50,12 +51,12 @@ export const CreateListingComponent = () => {
     e.preventDefault();
   };
 
-  const [name, setName] = useState("");
+  const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const onNameChange = (e: any) => {
-    setName(e.target.value);
+    setTitle(e.target.value);
   };
 
   const onDescriptionChange = (e: any) => {
@@ -125,7 +126,7 @@ export const CreateListingComponent = () => {
     <Spinner />
   ) : (
     <div className="flex flex-col md:flex-row w-full">
-      <div className="w-full mb-4">
+      <div className="w-full mb-4 md:mr-8">
         <div className="text-4xl text-center font-bold mb-12">New Listing</div>
         <div className="flex flex-wrap justify-center gap-4 mb-4">
           {imgSrcs.map((imgSrc: string) => (
@@ -154,10 +155,10 @@ export const CreateListingComponent = () => {
         <form className="flex flex-col" onSubmit={submitForm}>
           <LabledTextInput
             className={formFieldClass}
-            label="Name"
-            placeholder="Name"
+            label="Title"
+            placeholder="Title"
             onChange={onNameChange}
-            value={name}
+            value={title}
           />
           <LabledTextInput
             className={formFieldClass}
@@ -183,8 +184,17 @@ export const CreateListingComponent = () => {
           />
         </form>
       </div>
-      <div className="flex flex-col w-full items-center">
-        <div className="text-4xl text-center font-bold mb-12">Preview</div>
+      <div className="flex flex-col w-full">
+        <div className="text-4xl text-center font-bold mb-8">Preview</div>
+        <div className="mb-8">
+          <ImageCarousel imgSrcs={imgSrcs} />
+        </div>
+        <div className="text-3xl font-bold text-left mb-4">
+          {title == "" ? "Title" : title}
+        </div>
+        <div className="text-md text-left">
+          {description == "" ? "Description" : description}
+        </div>
       </div>
     </div>
   );
