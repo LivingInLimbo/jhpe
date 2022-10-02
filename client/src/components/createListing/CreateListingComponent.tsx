@@ -47,7 +47,11 @@ export const CreateListingComponent = () => {
     subcategories = categoryQuery.data.categories[0].subcategory;
   }
 
-  const CreateListingInternalComponent = () => {
+  const CreateListingInternalComponent = ({
+    categories,
+  }: {
+    categories: Category[];
+  }) => {
     const submitForm = (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
     };
@@ -55,6 +59,11 @@ export const CreateListingComponent = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
+    const [category, setCategory] = useState(categories[0].name);
+    const [subCategory, setSubCategory] = useState(
+      categories[0].subcategory[0].name
+    );
+
     const [errorMessage, setErrorMessage] = useState("");
 
     const onNameChange = (e: any) => {
@@ -82,7 +91,7 @@ export const CreateListingComponent = () => {
 
     const onCategoryChange = (e: any) => {
       const value = parseInt(e.target.value);
-      const selectedCategory = categoryQuery.data.categories.find(
+      const selectedCategory = categories.find(
         (category: Category) => category.id === value
       );
       if (selectedCategory) {
@@ -184,13 +193,22 @@ export const CreateListingComponent = () => {
               className={formFieldClass}
               label="Description"
               placeholder="Description"
+              charLimit={200}
               onChange={onDescriptionChange}
+              textArea={true}
               value={description}
             />
+            <div
+              className={`text-right font-light -mt-4 mr-1 ${
+                description.length >= 200 ? "text-red-600" : ""
+              }`}
+            >
+              {description.length + "/200"}
+            </div>
             <LabledSelect
               className={formFieldClass}
               onChange={onCategoryChange}
-              list={categoryQuery.data.categories}
+              list={categories}
               nameId="name"
               valueId="id"
               label="Category"
@@ -204,8 +222,8 @@ export const CreateListingComponent = () => {
             />
           </form>
         </div>
-        <div className="flex flex-col w-full rounded-md">
-          <div className="mb-4">
+        <div className="flex flex-col w-full lg:flex-row p-4 border-t md:border-l md:border-t-0 border-gray-400">
+          <div className="lg:w-full mb-4">
             <ImageCarousel
               imgSrcs={imgSrcs}
               defaultImage={
@@ -215,17 +233,20 @@ export const CreateListingComponent = () => {
               }
             />
           </div>
-          <div className="p-4 border border-gray-300 rounded-md">
+          <div className="lg:w-[400px] p-8 ">
+            <div className="font-light text-gray-500 mb-2">
+              {category + " > " + subCategory}
+            </div>
             <div
-              className={`text-3xl font-medium text-left mb-1 ${
+              className={`text-2xl font-medium text-left mb-1 w-full overflow-hidden text-ellipsis ${
                 !title && "text-gray-500"
               }`}
             >
               {title ? title : "Title"}
             </div>
             <div
-              className={`text-md font-normal mb-4 ${
-                !price && "text-gray-500"
+              className={`text-md font-normal mb-8 ${
+                !price ? "text-gray-500" : "text-green-700"
               }`}
             >
               {price ? price : "Price"}
@@ -246,6 +267,8 @@ export const CreateListingComponent = () => {
   return categoryQuery.loading ? (
     <Spinner />
   ) : (
-    <CreateListingInternalComponent />
+    <CreateListingInternalComponent
+      categories={categoryQuery.data.categories}
+    />
   );
 };

@@ -8,6 +8,7 @@ export const LabledTextInput = ({
   onChange = (event: any): void => {},
   name = "",
   type = "",
+  textArea = false,
   placeholder = "",
   charLimit = 50,
   required = false,
@@ -36,15 +37,25 @@ export const LabledTextInput = ({
           {required && <span className="text-red-600 ml-0.5">*</span>}
         </label>
       )}
-
-      <input
-        value={value}
-        onChange={onInputChange}
-        name={name}
-        type={type}
-        className={inputClass}
-        placeholder={placeholder}
-      />
+      {textArea ? (
+        <textarea
+          value={value}
+          onChange={onInputChange}
+          name={name}
+          rows={5}
+          className={inputClass}
+          placeholder={placeholder}
+        />
+      ) : (
+        <input
+          value={value}
+          onChange={onInputChange}
+          name={name}
+          type={type}
+          className={inputClass}
+          placeholder={placeholder}
+        />
+      )}
     </div>
   );
 };

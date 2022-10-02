@@ -48,8 +48,8 @@ export const ImageCarousel = ({
     "absolute text-center w-auto h-auto border border-gray-500 rounded-full p-2 cursor-pointer bg-white bg-opacity-80";
 
   return (
-    <div className="flex flex-col w-full select-none">
-      <div className="flex relative w-full justify-center rounded-t-md h-[50vh] overflow-hidden">
+    <div className="flex relative flex-col w-full select-none">
+      <div className="flex relative w-full justify-center rounded-t-md h-[80vh] overflow-hidden">
         {imgSrcs.length == 0 && defaultImage}
         {imgSrcs.length > 0 && (
           <>
@@ -70,7 +70,7 @@ export const ImageCarousel = ({
           </>
         )}
       </div>
-      <div className="flex flex-wrap justify-center gap-2 mt-4">
+      <div className="absolute bottom-2 flex w-full flex-wrap justify-center gap-2 mt-4">
         {imgSrcs.map((imgSrc) => {
           return (
             <img
