@@ -15,6 +15,32 @@ import { checkAuth } from "./helpers/checkAuth";
 const jwt = require("jsonwebtoken");
 const { ApolloServer, gql } = require("apollo-server-express");
 const client = new OAuth2Client(config.CLIENT_ID);
+const multer = require("multer");
+const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: function (req: any, file: any, cb: any) {
+    cb(null, "./uploads");
+  },
+  filename: function (req: any, file: any, cb: any) {
+    cb(null, new Date().toISOString() + file.originalname);
+  },
+});
+
+const fileFilter = (req: any, file: any, cb: any) => {
+  //reject a file
+  if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 1024 * 1024 * 25, fieldSize: 1024 * 1024 * 15 },
+  fileFilter: fileFilter,
+});
 
 const typeDefs = gql`
   type SubCategory {
@@ -107,6 +133,20 @@ const resolvers = {
 
 const startServer = async () => {
   const app = express();
+
+  app.post(
+    "/createListing",
+    upload.array("images", 10),
+    (req: Express.Request, res: Express.Response) => {}
+  );
+
+  app.use(express.static(path.resolve(__dirname, "../client/build")));
+  app.use("/uploads", express.static("uploads"));
+
+  // All other GET requests not handled before will return our React app
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "../client/build", "index.html"));
+  });
   const server = new ApolloServer({
     typeDefs,
     resolvers,

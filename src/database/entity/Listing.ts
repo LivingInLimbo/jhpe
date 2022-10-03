@@ -8,6 +8,7 @@ import {
 import { Category } from "./Category";
 import { SubCategory } from "./SubCategory";
 import { User } from "./User";
+import { ListingImage } from "./ListingImage";
 
 @Entity()
 export class Listing {
@@ -32,4 +33,9 @@ export class Listing {
 
   @ManyToOne(() => User, (user) => user.id, { onDelete: "CASCADE" })
   user: User;
+
+  @OneToMany(() => ListingImage, (listingImage) => listingImage.listing, {
+    eager: true,
+  })
+  images: ListingImage[];
 }

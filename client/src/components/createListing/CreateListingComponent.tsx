@@ -8,6 +8,7 @@ import { LabledSelect } from "../forms/LabledSelect";
 import { ColorButton } from "../forms/ColorButton";
 import { IoAdd } from "react-icons/io5";
 import { ImageCarousel } from "./ImageCarousel";
+import Compressor from "compressorjs";
 
 export const CreateListingComponent = () => {
   const GET_CATEGORIES = gql`
@@ -43,7 +44,6 @@ export const CreateListingComponent = () => {
   const categoryQuery = useQuery(GET_CATEGORIES);
   useErrorHandler(categoryQuery.error);
   if (categoryQuery.data) {
-    console.log(categoryQuery.data);
     subcategories = categoryQuery.data.categories[0].subcategory;
   }
 
@@ -118,25 +118,34 @@ export const CreateListingComponent = () => {
         } else {
           setErrorMessage("");
 
-          const handleFileChosen = async (file: File): Promise<string> => {
+          const handleFileChosen = (file: File): Promise<Blob> => {
             return new Promise((resolve, reject) => {
-              let fileReader = new FileReader();
-              fileReader.onload = () => {
-                resolve(fileReader.result?.toString() || "");
-              };
-              fileReader.onerror = reject;
-              fileReader.readAsDataURL(file);
+              const compressedFile = new Compressor(file, {
+                quality: 0.8,
+                success(res) {
+                  resolve(res);
+                },
+                error(err) {
+                  reject(err);
+                },
+              });
             });
           };
 
-          const results: string[] = await Promise.all(
+          const results: Blob[] = await Promise.all(
             Array.from(e.target.files).map(async (file: File) => {
               const fileContents = await handleFileChosen(file);
               return fileContents;
             })
           );
 
-          setImgSrcs(results);
+          const imageUrls = results.map((result) =>
+            URL.createObjectURL(result)
+          );
+
+          setImgSrcs(imageUrls);
+
+          //setImgSrcs(results);
         }
       }
     };
