@@ -12,6 +12,7 @@ import { User } from "./database/entity/User";
 import { config } from "./config";
 import { OAuth2Client } from "google-auth-library";
 import { checkAuth } from "./helpers/checkAuth";
+const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const { ApolloServer, gql } = require("apollo-server-express");
 const client = new OAuth2Client(config.CLIENT_ID);
@@ -23,7 +24,8 @@ const storage = multer.diskStorage({
     cb(null, "./uploads");
   },
   filename: function (req: any, file: any, cb: any) {
-    cb(null, new Date().toISOString() + file.originalname);
+    console.log(file);
+    cb(null, uuidv4() + ".png");
   },
 });
 
@@ -136,8 +138,10 @@ const startServer = async () => {
 
   app.post(
     "/createListing",
-    upload.array("images", 10),
-    (req: Express.Request, res: Express.Response) => {}
+    upload.array("images[]", 10),
+    (req: any, res: Express.Response) => {
+      console.log(req.files);
+    }
   );
 
   app.use(express.static(path.resolve(__dirname, "../client/build")));

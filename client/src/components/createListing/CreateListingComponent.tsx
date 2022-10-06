@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useQuery, gql } from "@apollo/client";
 import { optionsNoAuth } from "../..";
 import { useErrorHandler } from "react-error-boundary";
@@ -9,6 +9,7 @@ import { ColorButton } from "../forms/ColorButton";
 import { IoAdd } from "react-icons/io5";
 import { ImageCarousel } from "./ImageCarousel";
 import Compressor from "compressorjs";
+import { useCookies } from "react-cookie";
 
 export const CreateListingComponent = () => {
   const GET_CATEGORIES = gql`
@@ -52,8 +53,24 @@ export const CreateListingComponent = () => {
   }: {
     categories: Category[];
   }) => {
-    const submitForm = (e: FormEvent<HTMLFormElement>) => {
+    const [cookies, setCookie] = useCookies();
+    const submitForm = (e: any) => {
       e.preventDefault();
+      const formData = new FormData();
+      files.forEach((file: Blob) => {
+        formData.append("images[]", file);
+      });
+      fetch("/createListing", {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${cookies.userInfo}`,
+        },
+        body: formData,
+      })
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => console.log(err));
     };
 
     const [title, setTitle] = useState("");
@@ -100,10 +117,10 @@ export const CreateListingComponent = () => {
     };
 
     const [imgSrcs, setImgSrcs] = useState<string[]>([]);
+    const [files, setFiles] = useState<Blob[]>([]);
 
     const onSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
-        console.log(e.target.files);
         const fileRegex = new RegExp("image/*");
         const image = fileRegex.test(e.target.files[0].type);
         // check if file is indeed an image
@@ -121,7 +138,7 @@ export const CreateListingComponent = () => {
           const handleFileChosen = (file: File): Promise<Blob> => {
             return new Promise((resolve, reject) => {
               const compressedFile = new Compressor(file, {
-                quality: 0.8,
+                quality: 0.2,
                 success(res) {
                   resolve(res);
                 },
@@ -139,10 +156,13 @@ export const CreateListingComponent = () => {
             })
           );
 
+          console.log(results);
+
           const imageUrls = results.map((result) =>
             URL.createObjectURL(result)
           );
 
+          setFiles(results);
           setImgSrcs(imageUrls);
 
           //setImgSrcs(results);
@@ -181,6 +201,10 @@ export const CreateListingComponent = () => {
               ></img>
             ))}
           </div>
+          <img
+            className="w-32 h-32"
+            src="http://localhost:4000/uploads/2022-10-06T03:52:36.151Zblob"
+          ></img>
 
           <form className="w-full" onSubmit={submitForm}>
             <LabledTextInput
@@ -228,6 +252,11 @@ export const CreateListingComponent = () => {
               nameId="name"
               valueId="id"
               label="Sub Category"
+            />
+            <ColorButton
+              className="self-center"
+              label="Create Listing"
+              type="green"
             />
           </form>
         </div>

@@ -18,7 +18,7 @@ export const ColorButton = ({
   label = "Button",
   disabled = false,
   loading = false,
-}) => {
+}: props) => {
   let buttonColors = "";
   let cursorType = "cursor-pointer";
   switch (type) {
