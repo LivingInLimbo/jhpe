@@ -60,6 +60,11 @@ export const CreateListingComponent = () => {
       files.forEach((file: Blob) => {
         formData.append("images[]", file);
       });
+      formData.append("title", title);
+      formData.append("price", `${price}`);
+      formData.append("description", description);
+      formData.append("categoryId", `${category.id}`);
+      formData.append("subCategoryId", `${subCategory.id}`);
       fetch("/createListing", {
         method: "POST",
         headers: {
@@ -76,9 +81,9 @@ export const CreateListingComponent = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
-    const [category, setCategory] = useState(categories[0].name);
+    const [category, setCategory] = useState(categories[0]);
     const [subCategory, setSubCategory] = useState(
-      categories[0].subcategory[0].name
+      categories[0].subcategory[0]
     );
 
     const [errorMessage, setErrorMessage] = useState("");
@@ -138,7 +143,7 @@ export const CreateListingComponent = () => {
           const handleFileChosen = (file: File): Promise<Blob> => {
             return new Promise((resolve, reject) => {
               const compressedFile = new Compressor(file, {
-                quality: 0.2,
+                quality: 0.8,
                 success(res) {
                   resolve(res);
                 },

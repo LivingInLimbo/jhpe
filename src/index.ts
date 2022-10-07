@@ -2,16 +2,18 @@ import {
   ApolloServerExpressConfig,
   AuthenticationError,
 } from "apollo-server-express";
-import express from "express";
+import express, { query } from "express";
 import Express from "express";
 import { DataSource } from "typeorm";
 import { db, dbConfig } from "./database/db";
 import { Category } from "./database/entity/Category";
 import { SubCategory } from "./database/entity/SubCategory";
 import { User } from "./database/entity/User";
+import { Listing } from "./database/entity/Listing";
 import { config } from "./config";
 import { OAuth2Client } from "google-auth-library";
 import { checkAuth } from "./helpers/checkAuth";
+import { ListingImage } from "./database/entity/ListingImage";
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const { ApolloServer, gql } = require("apollo-server-express");
@@ -25,13 +27,21 @@ const storage = multer.diskStorage({
   },
   filename: function (req: any, file: any, cb: any) {
     console.log(file);
-    cb(null, uuidv4() + ".png");
+    if (file.mimetype == "image/webp") {
+      cb(null, uuidv4() + ".webp");
+    } else {
+      cb(null, uuidv4() + ".png");
+    }
   },
 });
 
 const fileFilter = (req: any, file: any, cb: any) => {
   //reject a file
-  if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
+  if (
+    ["image/jpg", "image/jpeg", "image/png", "image/webp"].find(
+      (value) => value == file.mimetype
+    ) != undefined
+  ) {
     cb(null, true);
   } else {
     cb(null, false);
@@ -139,8 +149,39 @@ const startServer = async () => {
   app.post(
     "/createListing",
     upload.array("images[]", 10),
-    (req: any, res: Express.Response) => {
-      console.log(req.files);
+    async (req: any, res: Express.Response) => {
+      const title = req.body.title || "";
+      const price = parseInt(req.body.price) || 0;
+      const description = req.body.description || "";
+      const category = parseInt(req.body.categoryId);
+      if (!category) {
+        res.status(400).json("no category");
+      }
+      const subcategory = parseInt(req.body.subCategoryId);
+      if (!subcategory) {
+        res.status(400).json("no subcategory");
+      }
+      const queryBuilder = db.createQueryBuilder();
+      const listing = db
+        .getRepository(Listing)
+        .create({ title, price, description });
+      await db.getRepository(Listing).save(listing);
+      await queryBuilder
+        .relation(Listing, "category")
+        .of(listing.id)
+        .set(category);
+      await queryBuilder
+        .relation(Listing, "subcategory")
+        .of(listing.id)
+        .set(subcategory);
+      const listingImages = req.files.map((file: any) =>
+        db.getRepository(ListingImage).create({ name: file.filename })
+      );
+      await db.getRepository(ListingImage).save(listingImages);
+      await queryBuilder
+        .relation(Listing, "images")
+        .of(listing.id)
+        .add(listingImages);
     }
   );
 

@@ -19,6 +19,9 @@ export class Listing {
   title: string;
 
   @Column()
+  price: number;
+
+  @Column()
   description: string;
 
   @ManyToOne(() => Category, (category) => category.id, {
