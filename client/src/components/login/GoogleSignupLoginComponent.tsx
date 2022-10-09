@@ -13,7 +13,7 @@ export const GoogleSignupLoginComponent = ({
   login = false,
 }) => {
   const navigate = useNavigate();
-  const [cookies, setCookie] = useCookies(["userInfo"]);
+  const [cookies, setCookie] = useCookies();
   const [error, setError] = useState(null);
   useErrorHandler(error);
 
@@ -27,7 +27,10 @@ export const GoogleSignupLoginComponent = ({
 
   const ADD_USER = gql`
     mutation addUser($credential: String!) {
-      addUser(credential: $credential)
+      addUser(credential: $credential) {
+        token
+        isGold
+      }
     }
   `;
 
@@ -46,7 +49,8 @@ export const GoogleSignupLoginComponent = ({
 
   useEffect(() => {
     if (data) {
-      setCookie("userInfo", data.addUser, { path: "/" });
+      setCookie("userInfo", data.addUser.token, { path: "/" });
+      setCookie("isGold", data.addUser.isGold, { path: "/" });
     }
   }, [data]);
 

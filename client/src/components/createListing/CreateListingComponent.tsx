@@ -62,6 +62,7 @@ export const CreateListingComponent = () => {
       });
       formData.append("title", title);
       formData.append("price", `${price}`);
+      formData.append("isGold", `${isGold}`);
       formData.append("description", description);
       formData.append("categoryId", `${category.id}`);
       formData.append("subCategoryId", `${subCategory.id}`);
@@ -81,6 +82,7 @@ export const CreateListingComponent = () => {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
+    const [isGold, setIsGold] = useState(false);
     const [category, setCategory] = useState(categories[0]);
     const [subCategory, setSubCategory] = useState(
       categories[0].subcategory[0]
@@ -90,6 +92,10 @@ export const CreateListingComponent = () => {
 
     const onNameChange = (e: any) => {
       setTitle(e.target.value);
+    };
+
+    const onGoldChange = (e: any) => {
+      setIsGold(e.target.checked);
     };
 
     const onDescriptionChange = (e: any) => {
@@ -206,12 +212,15 @@ export const CreateListingComponent = () => {
               ></img>
             ))}
           </div>
-          <img
-            className="w-32 h-32"
-            src="http://localhost:4000/uploads/2022-10-06T03:52:36.151Zblob"
-          ></img>
 
           <form className="w-full" onSubmit={submitForm}>
+            {cookies.isGold != "true" && (
+              <input
+                type="checkbox"
+                name="gold"
+                onChange={onGoldChange}
+              ></input>
+            )}
             <LabledTextInput
               className={formFieldClass}
               label="Title"
@@ -278,7 +287,7 @@ export const CreateListingComponent = () => {
           </div>
           <div className="lg:w-[400px] p-8 ">
             <div className="font-light text-gray-500 mb-2">
-              {category + " > " + subCategory}
+              {category.name + " > " + subCategory.name}
             </div>
             <div
               className={`text-2xl font-medium text-left mb-1 w-full overflow-hidden text-ellipsis ${
