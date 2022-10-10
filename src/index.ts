@@ -12,7 +12,7 @@ import { User } from "./database/entity/User";
 import { Listing } from "./database/entity/Listing";
 import { config } from "./config";
 import { OAuth2Client } from "google-auth-library";
-import { checkAuth } from "./helpers/checkAuth";
+import { checkAuth, checkAuthMiddleware } from "./helpers/checkAuth";
 import { ListingImage } from "./database/entity/ListingImage";
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
@@ -68,21 +68,70 @@ const typeDefs = gql`
     subcategory: [SubCategory]
   }
 
+  type User {
+    id: Int
+    phone: String
+    email: String
+    firstName: String
+    lastName: String
+    isGold: Boolean
+  }
+
+  type Listing {
+    id: Int
+    title: String
+    ListingImages: [ListingImage]
+    User: User
+  }
+
+  type ListingImage {
+    name: String
+  }
+
   type Query {
     categories: [Category]
+    getListings: [Listing]
+  }
+
+  type AddUserReturn {
+    token: String
+    isGold: Boolean
   }
 
   type Mutation {
-    addUser(credential: String): String
+    addUser(credential: String): AddUserReturn
   }
 `;
+
+type UserType = {
+  id: Number;
+  email: String;
+  isGold: Boolean;
+};
 
 const resolvers = {
   Query: {
     categories: async (
       parent: undefined,
       args: undefined,
-      context: { user: String }
+      context: { user: UserType }
+    ) => {
+      if (!context.user) {
+        throw new AuthenticationError("Session expired. Please login again.", {
+          status: 401,
+        });
+      }
+      const categories = await db
+        .getRepository(Category)
+        .find()
+        .catch((err) => console.log(err));
+      console.log(categories);
+      return categories;
+    },
+    getListings: async (
+      parent: undefined,
+      args: undefined,
+      context: { user: UserType }
     ) => {
       if (!context.user) {
         throw new AuthenticationError("Session expired. Please login again.", {
@@ -107,9 +156,13 @@ const resolvers = {
         audience: config.CLIENT_ID,
       });
 
-      const generateToken = (user: { id: Number; email: String }) => {
+      const generateToken = (user: {
+        id: Number;
+        email: String;
+        isGold: Boolean;
+      }) => {
         const token = jwt.sign(
-          { email: user.email, userId: user.id },
+          { email: user.email, userId: user.id, gold: user.isGold },
           config.JWT_KEY,
           {
             expiresIn: "12h",
@@ -124,7 +177,7 @@ const resolvers = {
         .getOne();
 
       if (user) {
-        return generateToken(user);
+        return { token: generateToken(user), isGold: user.isGold };
       } else {
         const insert = await db
           .createQueryBuilder()
@@ -134,10 +187,11 @@ const resolvers = {
           .execute();
 
         const token = generateToken({
-          id: insert.identifiers[0].id,
-          email: info.getPayload().email,
+          id: user.id,
+          email: user.email,
+          isGold: user.isGold,
         });
-        return token;
+        return { token: token, isGold: user.isGold };
       }
     },
   },
@@ -148,12 +202,15 @@ const startServer = async () => {
 
   app.post(
     "/createListing",
+    checkAuthMiddleware,
     upload.array("images[]", 10),
     async (req: any, res: Express.Response) => {
       const title = req.body.title || "";
       const price = parseInt(req.body.price) || 0;
       const description = req.body.description || "";
+      const isGold = (req.body.isGold || "false") == "true";
       const category = parseInt(req.body.categoryId);
+      const userId = req.user.userId;
       if (!category) {
         res.status(400).json("no category");
       }
@@ -164,7 +221,7 @@ const startServer = async () => {
       const queryBuilder = db.createQueryBuilder();
       const listing = db
         .getRepository(Listing)
-        .create({ title, price, description });
+        .create({ title, price, description, isGold });
       await db.getRepository(Listing).save(listing);
       await queryBuilder
         .relation(Listing, "category")
@@ -174,6 +231,7 @@ const startServer = async () => {
         .relation(Listing, "subcategory")
         .of(listing.id)
         .set(subcategory);
+      await queryBuilder.relation(Listing, "user").of(listing.id).set(userId);
       const listingImages = req.files.map((file: any) =>
         db.getRepository(ListingImage).create({ name: file.filename })
       );

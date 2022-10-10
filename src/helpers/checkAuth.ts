@@ -11,3 +11,15 @@ export const checkAuth = (authHeader: String) => {
   }
   return userData;
 };
+
+export const checkAuthMiddleware = (req: any, res: any, next: any) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, config.JWT_KEY);
+    req.user = decoded;
+  } catch (error) {
+    return res.status(401).json({ message: "auth failed" });
+  }
+
+  next();
+};

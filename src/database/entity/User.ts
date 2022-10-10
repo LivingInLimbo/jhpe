@@ -19,7 +19,7 @@ export class User {
   lastName?: string;
 
   @Column({ default: false })
-  isGold?: boolean;
+  isGold: boolean;
 
   @OneToMany(() => Listing, (listing) => listing.id)
   listing: Listing;

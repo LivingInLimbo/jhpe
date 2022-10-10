@@ -15,6 +15,9 @@ export class Listing {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: false })
+  isGold: boolean;
+
   @Column()
   title: string;
 
@@ -31,10 +34,14 @@ export class Listing {
 
   @ManyToOne(() => SubCategory, (subcategory) => subcategory.id, {
     onDelete: "SET NULL",
+    eager: true,
   })
   subcategory: SubCategory;
 
-  @ManyToOne(() => User, (user) => user.id, { onDelete: "CASCADE" })
+  @ManyToOne(() => User, (user) => user.id, {
+    onDelete: "CASCADE",
+    eager: true,
+  })
   user: User;
 
   @OneToMany(() => ListingImage, (listingImage) => listingImage.listing, {
