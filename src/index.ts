@@ -4,7 +4,7 @@ import {
 } from "apollo-server-express";
 import express, { query } from "express";
 import Express from "express";
-import { DataSource } from "typeorm";
+import { DataSource, ILike, Not, Raw } from "typeorm";
 import { db, dbConfig } from "./database/db";
 import { Category } from "./database/entity/Category";
 import { SubCategory } from "./database/entity/SubCategory";
@@ -80,8 +80,12 @@ const typeDefs = gql`
   type Listing {
     id: Int
     title: String
-    ListingImages: [ListingImage]
-    User: User
+    description: String
+    price: Int
+    images: [ListingImage]
+    category: Category
+    subcategory: SubCategory
+    user: User
   }
 
   type ListingImage {
@@ -90,7 +94,7 @@ const typeDefs = gql`
 
   type Query {
     categories: [Category]
-    getListings: [Listing]
+    getListings(subcategory: String, search: String, gold: Boolean): [Listing]
   }
 
   type AddUserReturn {
@@ -130,20 +134,19 @@ const resolvers = {
     },
     getListings: async (
       parent: undefined,
-      args: undefined,
-      context: { user: UserType }
+      {
+        subcategory,
+        search,
+        gold,
+      }: { subcategory: String; search: String; gold: Boolean }
     ) => {
-      if (!context.user) {
-        throw new AuthenticationError("Session expired. Please login again.", {
-          status: 401,
-        });
-      }
-      const categories = await db
-        .getRepository(Category)
-        .find()
-        .catch((err) => console.log(err));
-      console.log(categories);
-      return categories;
+      const listings = await db.getRepository(Listing).find({
+        where: {
+          title: ILike(`%${search || ""}%`),
+        },
+      });
+      console.log(listings);
+      return listings;
     },
   },
   Mutation: {

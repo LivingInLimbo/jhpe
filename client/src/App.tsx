@@ -16,6 +16,7 @@ import { ErrorPage } from "./components/app/ErrorPage";
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { homeUrl } from "./config";
 import { useCookies } from "react-cookie";
+import Listings from "./pages/Listings";
 
 type RouteObj = {
   path: string;
@@ -50,7 +51,7 @@ function App() {
                 element={<ProtectedRoute element={route.element} />}
               />
             ))}
-            <Route path="*" element={<Home />} />
+            <Route path="*" element={<Listings />} />
           </Routes>
         </ErrorBoundary>
       </BrowserRouter>

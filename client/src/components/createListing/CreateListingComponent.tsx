@@ -214,7 +214,7 @@ export const CreateListingComponent = () => {
           </div>
 
           <form className="w-full" onSubmit={submitForm}>
-            {cookies.isGold != "true" && (
+            {cookies.isGold == "true" && (
               <input
                 type="checkbox"
                 name="gold"

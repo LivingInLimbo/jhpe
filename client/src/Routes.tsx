@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import CreateListing from "./pages/CreateListing";
+import Listings from "./pages/Listings";
 
 // Define different route list based on auth level
 // TODO: more user roles to be added
@@ -28,6 +29,11 @@ export const NonAuthRoutes: Route[] = [
   {
     path: "/signup",
     element: <Signup />,
+    exact: true,
+  },
+  {
+    path: "/listings",
+    element: <Listings />,
     exact: true,
   },
 
