@@ -94,7 +94,12 @@ const typeDefs = gql`
 
   type Query {
     categories: [Category]
-    getListings(subcategory: String, search: String, gold: Boolean): [Listing]
+    getListings(
+      subcategory: String
+      search: String
+      gold: Boolean
+      offset: Int
+    ): [Listing]
   }
 
   type AddUserReturn {
@@ -138,12 +143,15 @@ const resolvers = {
         subcategory,
         search,
         gold,
-      }: { subcategory: String; search: String; gold: Boolean }
+        offset,
+      }: { subcategory: String; search: String; gold: Boolean; offset: number }
     ) => {
       const listings = await db.getRepository(Listing).find({
         where: {
           title: ILike(`%${search || ""}%`),
         },
+        take: 25,
+        skip: offset || 0,
       });
       console.log(listings);
       return listings;
