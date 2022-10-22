@@ -5,6 +5,7 @@ import { useCookies } from "react-cookie";
 import { IoClose, IoMenu } from "react-icons/io5";
 import { Logo } from "./Logo";
 import { headerLinks } from "./headerLinks";
+import { SearchBar } from "./SearchBar";
 
 export const MobileHeader = () => {
   const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);

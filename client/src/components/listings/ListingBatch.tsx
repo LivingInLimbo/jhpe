@@ -4,11 +4,17 @@ import { Spinner } from "../app/Spinner";
 import { ListingCard } from "./ListingCard";
 import type { Listing } from "./ListingCard";
 
-export const ListingBatch = ({ offset = 0 }: { offset: number }) => {
+export const ListingBatch = ({
+  offset = 0,
+  search = "",
+}: {
+  offset: number;
+  search?: string;
+}) => {
   console.log(offset);
   const query = gql`
-    query getListings($offset: Int) {
-      getListings(offset: $offset) {
+    query getListings($offset: Int, $search: String) {
+      getListings(offset: $offset, search: $search) {
         id
         title
         description
@@ -27,7 +33,7 @@ export const ListingBatch = ({ offset = 0 }: { offset: number }) => {
   `;
 
   const { loading, error, data } = useQuery(query, {
-    variables: { offset: offset },
+    variables: { offset, search },
   });
   if (data) console.log(data);
 

@@ -147,9 +147,10 @@ const resolvers = {
       }: { subcategory: String; search: String; gold: Boolean; offset: number }
     ) => {
       const listings = await db.getRepository(Listing).find({
-        where: {
-          title: ILike(`%${search || ""}%`),
-        },
+        where: [
+          { title: ILike(`%${search || ""}%`) },
+          { description: ILike(`%${search || ""}%`) },
+        ],
         take: 25,
         skip: offset || 0,
       });

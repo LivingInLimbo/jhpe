@@ -6,6 +6,8 @@ import { IoClose, IoMenu, IoLogOutOutline } from "react-icons/io5";
 import { GrMenu } from "react-icons/gr";
 import { Logo } from "./Logo";
 import { headerLinks } from "./headerLinks";
+import { LabledTextInput } from "../forms/LabledTextInput";
+import { SearchBar } from "./SearchBar";
 
 export const DesktopHeader = () => {
   const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);

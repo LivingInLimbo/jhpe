@@ -1,7 +1,8 @@
 import React from "react";
 
 type props = {
-  type?: String;
+  type?: string;
+  buttonType?: "button" | "submit";
   className?: String;
   height?: String;
   onClick?: any;
@@ -12,6 +13,7 @@ type props = {
 
 export const ColorButton = ({
   type = "",
+  buttonType = "button",
   className = "",
   height = "h-auto",
   onClick = () => {},
@@ -56,6 +58,7 @@ export const ColorButton = ({
 
   return (
     <button
+      type={buttonType}
       onClick={disabled || loading ? () => null : onClick}
       className={`${className} flex ${height} select-none items-center justify-center font-medium border text-xs ${
         disabled || loading ? "" : "hover:text-white"
