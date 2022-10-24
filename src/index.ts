@@ -95,7 +95,7 @@ const typeDefs = gql`
   type Query {
     categories: [Category]
     getListings(
-      subcategory: String
+      category: String
       search: String
       gold: Boolean
       offset: Int
@@ -140,22 +140,32 @@ const resolvers = {
     getListings: async (
       parent: undefined,
       {
-        subcategory,
+        category,
         search,
         gold,
         offset,
-      }: { subcategory: String; search: String; gold: Boolean; offset: number }
+      }: { category: String; search: String; gold: Boolean; offset: number }
     ) => {
-      const listings = await db.getRepository(Listing).find({
-        where: [
-          { title: ILike(`%${search || ""}%`) },
-          { description: ILike(`%${search || ""}%`) },
-        ],
-        take: 25,
-        skip: offset || 0,
-      });
-      console.log(listings);
-      return listings;
+      console.log(category || null);
+      const listingsAndCount = await db
+        .getRepository(Listing)
+        .createQueryBuilder("listing")
+        .leftJoinAndSelect("listing.category", "category")
+        .leftJoinAndSelect("listing.subcategory", "subcategory")
+        .leftJoinAndSelect("listing.images", "images")
+        .where(
+          `Listing.title ilike '%' || :search || '%' or Listing.description ilike '%' || :search || '%'`,
+          { search }
+        )
+        .andWhere(
+          ":category::varchar is null or category.urlName = :category or subcategory.urlName = :category",
+          {
+            category: category || null, // explicitly pass null as the empty string isn't considered null (unlike raw PostgreSQL)
+          }
+        )
+        .getManyAndCount();
+
+      return listingsAndCount[0];
     },
   },
   Mutation: {

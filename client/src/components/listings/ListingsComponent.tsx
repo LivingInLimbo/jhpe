@@ -6,6 +6,7 @@ import type { Listing } from "./ListingCard";
 import { ListingBatch } from "./ListingBatch";
 import { ColorButton } from "../forms/ColorButton";
 import { useSearchParams } from "react-router-dom";
+import { ListingsSidebar } from "./ListingsSidebar";
 
 export const ListingsComponent = () => {
   const [listings, setListings] = useState<JSX.Element[]>([]);
@@ -27,6 +28,7 @@ export const ListingsComponent = () => {
         key={offset}
         offset={offset}
         search={searchParams.get("search") || ""}
+        category={searchParams.get("category") || ""}
       />,
     ]);
   }, [searchParams.get("search")]);
@@ -38,12 +40,14 @@ export const ListingsComponent = () => {
         key={offset}
         offset={offset}
         search={searchParams.get("search") || ""}
+        category={searchParams.get("category") || ""}
       />,
     ]);
   }, [offset]);
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex w-full">
+      <ListingsSidebar />
       <div className="grid w-full gap-2 auto-rows-fr grid-cols-3">
         {listings}
       </div>
