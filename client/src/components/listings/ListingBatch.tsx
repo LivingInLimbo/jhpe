@@ -8,15 +8,26 @@ export const ListingBatch = ({
   offset = 0,
   search = "",
   category = "",
+  sort = "",
 }: {
   offset: number;
   search?: string;
   category?: string;
+  sort?: string;
 }) => {
-  console.log(offset);
   const query = gql`
-    query getListings($offset: Int, $search: String, $category: String) {
-      getListings(offset: $offset, search: $search, category: $category) {
+    query getListings(
+      $offset: Int
+      $search: String
+      $category: String
+      $sort: String
+    ) {
+      getListings(
+        offset: $offset
+        search: $search
+        category: $category
+        sort: $sort
+      ) {
         id
         title
         description
@@ -35,7 +46,7 @@ export const ListingBatch = ({
   `;
 
   const { loading, error, data } = useQuery(query, {
-    variables: { offset, search, category },
+    variables: { offset, search, category, sort },
   });
   if (data) console.log(data);
 

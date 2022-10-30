@@ -99,7 +99,9 @@ const typeDefs = gql`
       search: String
       gold: Boolean
       offset: Int
+      sort: String
     ): [Listing]
+    getListingCount(category: String, search: String, gold: Boolean): Int
   }
 
   type AddUserReturn {
@@ -125,11 +127,11 @@ const resolvers = {
       args: undefined,
       context: { user: UserType }
     ) => {
-      if (!context.user) {
+      /*if (!context.user) {
         throw new AuthenticationError("Session expired. Please login again.", {
           status: 401,
         });
-      }
+      }*/
       const categories = await db
         .getRepository(Category)
         .find()
@@ -144,10 +146,58 @@ const resolvers = {
         search,
         gold,
         offset,
-      }: { category: String; search: String; gold: Boolean; offset: number }
+        sort,
+      }: {
+        category: String;
+        search: String;
+        gold: Boolean;
+        offset: number;
+        sort: String;
+      }
     ) => {
-      console.log(category || null);
-      const listingsAndCount = await db
+      sort = sort || "";
+      let orderBy = sort.split("-")[0];
+      let dir = sort.split("-")[1] || "desc";
+      if (orderBy == "price") {
+        orderBy = "Listing.price";
+      } else {
+        orderBy = "Listing.last_update";
+      }
+
+      if (["desc", "asc"].findIndex((d: string) => d == dir) < 0) {
+        dir = "desc";
+      }
+
+      const listings = await db
+        .getRepository(Listing)
+        .createQueryBuilder("listing")
+        .leftJoinAndSelect("listing.category", "category")
+        .leftJoinAndSelect("listing.subcategory", "subcategory")
+        .leftJoinAndSelect("listing.images", "images")
+        .where(
+          `(Listing.title ilike '%' || :search || '%' or Listing.description ilike '%' || :search || '%')`,
+          { search }
+        )
+        .andWhere(
+          "(:category::varchar is null or category.urlName = :category or subcategory.urlName = :category)",
+          {
+            category: category || null, // explicitly pass null as the empty string isn't considered null (unlike raw PostgreSQL)
+          }
+        )
+        .orderBy(`${orderBy}`, dir == "asc" ? "ASC" : "DESC")
+        .getMany();
+
+      return listings;
+    },
+    getListingCount: async (
+      parent: undefined,
+      {
+        category,
+        search,
+        gold,
+      }: { category: String; search: String; gold: Boolean }
+    ) => {
+      const listings = await db
         .getRepository(Listing)
         .createQueryBuilder("listing")
         .leftJoinAndSelect("listing.category", "category")
@@ -163,9 +213,9 @@ const resolvers = {
             category: category || null, // explicitly pass null as the empty string isn't considered null (unlike raw PostgreSQL)
           }
         )
-        .getManyAndCount();
+        .getCount();
 
-      return listingsAndCount[0];
+      return listings;
     },
   },
   Mutation: {

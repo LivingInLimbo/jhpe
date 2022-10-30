@@ -15,6 +15,9 @@ export class Listing {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: new Date() })
+  last_update: Date;
+
   @Column({ default: false })
   isGold: boolean;
 
