@@ -8,6 +8,7 @@ import { ColorButton } from "../forms/ColorButton";
 import { useSearchParams } from "react-router-dom";
 import { ListingsSidebar } from "./ListingsSidebar";
 import { CountAndSearchDisplay } from "./CountAndSearchDisplay";
+import { useErrorHandler } from "react-error-boundary";
 
 export const ListingsComponent = () => {
   const [listings, setListings] = useState<JSX.Element[]>([]);
@@ -27,32 +28,46 @@ export const ListingsComponent = () => {
   const search = searchParams.get("search");
   const sort = searchParams.get("sort");
 
+  const query = gql`
+    query getListingCount($category: String, $search: String) {
+      getListingCount(category: $category, search: $search)
+    }
+  `;
+
+  const { data, loading, error } = useQuery(query);
+  useErrorHandler(error);
+
   useEffect(() => {
     setListings([
       <ListingBatch
-        key={offset}
-        offset={offset}
+        key={0}
+        offset={0}
         search={search || ""}
         category={category || ""}
         sort={sort || ""}
       />,
     ]);
+    setOffset(0);
   }, [category, search, sort]);
 
   useEffect(() => {
-    setListings([
-      ...listings,
-      <ListingBatch
-        key={offset}
-        offset={offset}
-        search={search || ""}
-        category={category || ""}
-        sort={sort || ""}
-      />,
-    ]);
+    if (offset != 0 && offset != (data?.getListingCount || 0)) {
+      setListings([
+        ...listings,
+        <ListingBatch
+          key={offset}
+          offset={offset}
+          search={search || ""}
+          category={category || ""}
+          sort={sort || ""}
+        />,
+      ]);
+    }
   }, [offset]);
 
-  return (
+  return loading ? (
+    <Spinner />
+  ) : (
     <div className="flex w-full">
       <ListingsSidebar />
       <div className="flex flex-col w-full">

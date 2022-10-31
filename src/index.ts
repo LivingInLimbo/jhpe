@@ -168,12 +168,14 @@ const resolvers = {
         dir = "desc";
       }
 
+      console.log(offset || 1);
+
       const listings = await db
         .getRepository(Listing)
-        .createQueryBuilder("listing")
-        .leftJoinAndSelect("listing.category", "category")
-        .leftJoinAndSelect("listing.subcategory", "subcategory")
-        .leftJoinAndSelect("listing.images", "images")
+        .createQueryBuilder("Listing")
+        .leftJoinAndSelect("Listing.category", "category")
+        .leftJoinAndSelect("Listing.subcategory", "subcategory")
+        .leftJoinAndSelect("Listing.images", "images")
         .where(
           `(Listing.title ilike '%' || :search || '%' or Listing.description ilike '%' || :search || '%')`,
           { search }
@@ -185,7 +187,13 @@ const resolvers = {
           }
         )
         .orderBy(`${orderBy}`, dir == "asc" ? "ASC" : "DESC")
-        .getMany();
+        .skip(offset || 0)
+        .take(1)
+        .getMany()
+        .catch((e) => console.log(e));
+
+      //const listingsSql = listings.getSql();
+      console.log(listings);
 
       return listings;
     },

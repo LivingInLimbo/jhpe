@@ -5,7 +5,7 @@ import { ListingCard } from "./ListingCard";
 import type { Listing } from "./ListingCard";
 
 export const ListingBatch = ({
-  offset = 0,
+  offset = 1,
   search = "",
   category = "",
   sort = "",
