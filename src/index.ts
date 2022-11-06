@@ -101,6 +101,7 @@ const typeDefs = gql`
       offset: Int
       sort: String
     ): [Listing]
+    getListing(id: Int): Listing
     getListingCount(category: String, search: String, gold: Boolean): Int
   }
 
@@ -196,6 +197,12 @@ const resolvers = {
       console.log(listings);
 
       return listings;
+    },
+    getListing: async (parent: undefined, { id }: { id: number }) => {
+      const listing = await db
+        .getRepository(Listing)
+        .findOne({ where: { id: id } });
+      return listing;
     },
     getListingCount: async (
       parent: undefined,

@@ -32,6 +32,7 @@ export class Listing {
 
   @ManyToOne(() => Category, (category) => category.id, {
     onDelete: "SET NULL",
+    eager: true,
   })
   category: Category;
 

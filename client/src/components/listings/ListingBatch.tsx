@@ -48,7 +48,6 @@ export const ListingBatch = ({
   const { loading, error, data } = useQuery(query, {
     variables: { offset, search, category, sort },
   });
-  if (data) console.log(data);
 
   return loading ? (
     <Spinner />

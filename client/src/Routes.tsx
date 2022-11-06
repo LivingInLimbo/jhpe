@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import CreateListing from "./pages/CreateListing";
 import Listings from "./pages/Listings";
+import SingleListing from "./pages/SingleListing";
 
 // Define different route list based on auth level
 // TODO: more user roles to be added
@@ -34,6 +35,11 @@ export const NonAuthRoutes: Route[] = [
   {
     path: "/listings",
     element: <Listings />,
+    exact: true,
+  },
+  {
+    path: "/listing/:listingId",
+    element: <SingleListing />,
     exact: true,
   },
 

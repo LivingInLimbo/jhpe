@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { homeUrl } from "../../config";
+import { useNavigate } from "react-router";
 
 export type Listing = {
   id: Number;
@@ -28,8 +29,12 @@ export type Listing = {
 };
 
 export const ListingCard = ({ listing }: { listing: Listing }) => {
+  let navigate = useNavigate();
   return (
-    <div className="w-full p-4">
+    <div
+      className="w-full cursor-pointer"
+      onClick={() => window.open(`/listing/${listing.id}`, "_blank")}
+    >
       <div className="w-full aspect-square border border-opacity-30 border-gray-400 rounded-md">
         <img
           className="w-full h-full object-contain"

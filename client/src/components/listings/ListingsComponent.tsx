@@ -14,56 +14,73 @@ export const ListingsComponent = () => {
   const [listings, setListings] = useState<JSX.Element[]>([]);
   const [offset, setOffset] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
-  const addBatch = () => {
-    setOffset(offset + 1);
+
+  const batchCount = 1;
+
+  const incrementOffset = () => {
+    setOffset(offset + batchCount);
   };
 
   window.onscroll = function (ev) {
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-      addBatch();
+      incrementOffset();
     }
   };
 
-  const category = searchParams.get("category");
-  const search = searchParams.get("search");
-  const sort = searchParams.get("sort");
+  const category = searchParams.get("category") || "";
+  const search = searchParams.get("search") || "";
+  const sort = searchParams.get("sort") || "";
 
   const query = gql`
-    query getListingCount($category: String, $search: String) {
-      getListingCount(category: $category, search: $search)
+    query getListingCategories($category: String, $search: String) {
+      getListingCount(search: $search, category: $category)
     }
   `;
 
-  const { data, loading, error } = useQuery(query);
+  const { data, loading, error } = useQuery(query, {
+    variables: { category, search },
+  });
   useErrorHandler(error);
+
+  const addListingBatch = (offset: number) => {
+    setListings([
+      ...listings,
+      <ListingBatch
+        key={offset}
+        offset={offset}
+        search={search}
+        category={category}
+        sort={sort}
+      />,
+    ]);
+  };
 
   useEffect(() => {
     setListings([
       <ListingBatch
         key={0}
         offset={0}
-        search={search || ""}
-        category={category || ""}
-        sort={sort || ""}
+        search={search}
+        category={category}
+        sort={sort}
       />,
     ]);
     setOffset(0);
   }, [category, search, sort]);
 
   useEffect(() => {
-    if (offset != 0 && offset != (data?.getListingCount || 0)) {
-      setListings([
-        ...listings,
-        <ListingBatch
-          key={offset}
-          offset={offset}
-          search={search || ""}
-          category={category || ""}
-          sort={sort || ""}
-        />,
-      ]);
+    if (!loading) {
+      if (
+        window.innerHeight == document.body.offsetHeight &&
+        offset != data.getListingCount
+      ) {
+        addListingBatch(offset + batchCount);
+        incrementOffset();
+      } else if (offset != 0 && offset != data.getListingCount) {
+        addListingBatch(offset);
+      }
     }
-  }, [offset]);
+  }, [offset, loading]);
 
   return loading ? (
     <Spinner />
@@ -71,10 +88,7 @@ export const ListingsComponent = () => {
     <div className="flex w-full">
       <ListingsSidebar />
       <div className="flex flex-col w-full">
-        <CountAndSearchDisplay
-          search={searchParams.get("search") || ""}
-          category={searchParams.get("category") || ""}
-        />
+        <CountAndSearchDisplay search={search} category={category} />
         <div className="grid w-full gap-2 auto-rows-fr grid-cols-3">
           {listings}
         </div>
