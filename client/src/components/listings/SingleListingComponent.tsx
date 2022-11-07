@@ -31,6 +31,13 @@ export const SingleListingComponent = () => {
         images {
           name
         }
+        user {
+          id
+          email
+          firstName
+          lastName
+          isGold
+        }
       }
     }
   `;
@@ -47,7 +54,7 @@ export const SingleListingComponent = () => {
   return !listing ? (
     <Spinner />
   ) : (
-    <div className="w-full flex flex-col md:flex-row">
+    <div className="w-full flex flex-col md:flex-row gap-4">
       <ImageCarousel
         imgSrcs={listing.images.map(
           (image) => `${homeUrl}/uploads/${image.name}`
@@ -67,6 +74,19 @@ export const SingleListingComponent = () => {
         </div>
         <div className={`text-md font-light text-left`}>
           {listing.description}
+        </div>
+        <div className="flex flex-col w-full p-2 border border-gray-400 rounded-md mt-8 font-light">
+          <span className="font-bold mb-2">Seller Details</span>
+          <span className={`${!listing.user.firstName ? "text-gray-500" : ""}`}>
+            {listing.user.firstName
+              ? `${listing.user.firstName} ${listing.user.lastName}`
+              : "No Name"}
+          </span>
+          <span className={`${!listing.user.phone ? "text-gray-500" : ""}`}>
+            {listing.user.phone || "No Phone"}
+          </span>
+
+          {listing.user.email}
         </div>
       </div>
     </div>

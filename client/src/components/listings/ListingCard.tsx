@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { homeUrl } from "../../config";
-import { useNavigate } from "react-router";
 
 export type Listing = {
   id: Number;
@@ -18,18 +17,17 @@ export type Listing = {
   images: {
     name: string;
   }[];
-  user?: {
+  user: {
     id: Number;
-    phone: String;
+    phone?: String;
     email: String;
-    firstName: String;
-    lastName: String;
-    isGold: Boolean;
+    firstName?: String;
+    lastName?: String;
+    isGold?: Boolean;
   };
 };
 
 export const ListingCard = ({ listing }: { listing: Listing }) => {
-  let navigate = useNavigate();
   return (
     <div
       className="w-full cursor-pointer"

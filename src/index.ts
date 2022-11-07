@@ -69,9 +69,9 @@ const typeDefs = gql`
   }
 
   type User {
-    id: Int
+    id: Int!
     phone: String
-    email: String
+    email: String!
     firstName: String
     lastName: String
     isGold: Boolean
@@ -103,6 +103,9 @@ const typeDefs = gql`
     ): [Listing]
     getListing(id: Int): Listing
     getListingCount(category: String, search: String, gold: Boolean): Int
+    getListingsByUser: [Listing]
+    checkToken: Boolean
+    getUser: User
   }
 
   type AddUserReturn {
@@ -116,9 +119,9 @@ const typeDefs = gql`
 `;
 
 type UserType = {
-  id: Number;
-  email: String;
-  isGold: Boolean;
+  id: number;
+  email: string;
+  isGold: boolean;
 };
 
 const resolvers = {
@@ -137,7 +140,6 @@ const resolvers = {
         .getRepository(Category)
         .find()
         .catch((err) => console.log(err));
-      console.log(categories);
       return categories;
     },
     getListings: async (
@@ -231,6 +233,43 @@ const resolvers = {
         .getCount();
 
       return listings;
+    },
+    getListingsByUser: async (
+      parent: undefined,
+      args: undefined,
+      context: { user: UserType }
+    ) => {
+      if (!context.user) {
+        return new AuthenticationError("Token expired");
+      } else {
+        const listings = db
+          .getRepository(Listing)
+          .find({ where: { user: { id: context.user.id } } });
+        return listings;
+      }
+    },
+    checkToken: async (
+      parent: undefined,
+      args: undefined,
+      context: { user: UserType }
+    ) => {
+      if (!context.user) {
+        return new AuthenticationError("Token expired");
+      } else return true;
+    },
+    getUser: async (
+      parent: undefined,
+      args: undefined,
+      context: { user: UserType }
+    ) => {
+      if (!context.user) {
+        return new AuthenticationError("Token expired");
+      } else {
+        const user = await db
+          .getRepository(User)
+          .findOne({ where: { id: context.user.id } });
+        return user;
+      }
     },
   },
   Mutation: {

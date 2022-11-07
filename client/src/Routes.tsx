@@ -5,6 +5,7 @@ import Signup from "./pages/Signup";
 import CreateListing from "./pages/CreateListing";
 import Listings from "./pages/Listings";
 import SingleListing from "./pages/SingleListing";
+import Account from "./pages/Account";
 
 // Define different route list based on auth level
 // TODO: more user roles to be added
@@ -53,12 +54,12 @@ export const ProtectedRoutes: Route[] = [
     path: "/new",
     element: <CreateListing />,
     exact: true,
-  } /*
-  {
-    path: "/add",
-    element: <EditClothing />,
-    exact: true,
   },
+  {
+    path: "/account",
+    element: <Account />,
+    exact: true,
+  } /*
   {
     path: "/outfits",
     element: <ViewOutfits />,

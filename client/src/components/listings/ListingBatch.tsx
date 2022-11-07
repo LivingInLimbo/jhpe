@@ -41,6 +41,13 @@ export const ListingBatch = ({
         images {
           name
         }
+        user {
+          id
+          email
+          firstName
+          lastName
+          isGold
+        }
       }
     }
   `;

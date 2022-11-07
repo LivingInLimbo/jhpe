@@ -26,7 +26,6 @@ type RouteObj = {
 
 function App() {
   const [cookies, setCookie, removeCookie] = useCookies();
-  const auth = cookies.userInfo !== undefined;
 
   const client = new ApolloClient({
     uri: `${homeUrl}/graphql`,
