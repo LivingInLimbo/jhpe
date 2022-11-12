@@ -2,7 +2,8 @@ import { useState } from "react";
 import { gql, useQuery } from "@apollo/client";
 import { useErrorHandler } from "react-error-boundary";
 import { Spinner } from "../app/Spinner";
-import { Listing, ListingCard } from "../listings/ListingCard";
+import { ListingCard } from "../listings/ListingCard";
+import { Listing } from "../../helpers/gqlTypes";
 import { AccountEditComponent } from "./AccountEditComponent";
 
 export const AccountComponent = () => {
@@ -32,7 +33,7 @@ export const AccountComponent = () => {
   return loading ? (
     <Spinner />
   ) : (
-    <div className="flex w-full flex-col md:flex-row">
+    <div className="flex w-full gap-8 flex-col md:flex-row">
       <div className="flex flex-col w-full md:w-1/3">
         <span className="text-3xl font-bold mb-8">Account Info</span>
         <AccountEditComponent user={data.getUser} />

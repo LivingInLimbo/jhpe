@@ -2,7 +2,7 @@ import { useState } from "react";
 import { gql, useQuery } from "@apollo/client";
 import { Spinner } from "../app/Spinner";
 import { ListingCard } from "./ListingCard";
-import type { Listing } from "./ListingCard";
+import { Listing } from "../../helpers/gqlTypes";
 
 export const ListingBatch = ({
   offset = 1,

@@ -4,7 +4,7 @@ import {
 } from "apollo-server-express";
 import express, { query } from "express";
 import Express from "express";
-import { DataSource, ILike, Not, Raw } from "typeorm";
+import { DataSource, ILike, Not, Raw, IsNull } from "typeorm";
 import { db, dbConfig } from "./database/db";
 import { Category } from "./database/entity/Category";
 import { SubCategory } from "./database/entity/SubCategory";
@@ -102,6 +102,7 @@ const typeDefs = gql`
       sort: String
     ): [Listing]
     getListing(id: Int): Listing
+    getUserListing(id: Int): Listing
     getListingCount(category: String, search: String, gold: Boolean): Int
     getListingsByUser: [Listing]
     checkToken: Boolean
@@ -201,9 +202,22 @@ const resolvers = {
       return listings;
     },
     getListing: async (parent: undefined, { id }: { id: number }) => {
-      const listing = await db
-        .getRepository(Listing)
-        .findOne({ where: { id: id } });
+      const listing = await db.getRepository(Listing).findOne({
+        where: { id: id },
+      });
+      return listing;
+    },
+    getUserListing: async (
+      parent: undefined,
+      { id }: { id: number },
+      context: { user: UserType }
+    ) => {
+      if (!context.user) {
+        return new AuthenticationError("Token expired");
+      }
+      const listing = await db.getRepository(Listing).findOne({
+        where: { id: id, user: { id: context.user.id } },
+      });
       return listing;
     },
     getListingCount: async (

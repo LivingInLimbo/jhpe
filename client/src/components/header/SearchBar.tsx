@@ -19,6 +19,7 @@ export const SearchBar = () => {
         onChange={(e: any) => setSearchValue(e.target.value)}
         className="flex grow ml-3"
         placeholder="Search listings..."
+        margin="mb-0"
       />
       <ColorButton label="Search" className="ml-2" onClick={searchListings} />
     </form>

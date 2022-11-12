@@ -1,5 +1,5 @@
 import React, { useState, useEffect, FormEvent } from "react";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery, useLazyQuery, gql } from "@apollo/client";
 import { optionsNoAuth } from "../..";
 import { useErrorHandler } from "react-error-boundary";
 import { Spinner } from "../app/Spinner";
@@ -10,36 +10,12 @@ import { IoAdd } from "react-icons/io5";
 import { ImageCarousel } from "./ImageCarousel";
 import Compressor from "compressorjs";
 import { useCookies } from "react-cookie";
+import { GET_CATEGORIES, GET_SINGLE_LISTING } from "../../helpers/gqlQueries";
+import { Category, SubCategory } from "../../helpers/gqlTypes";
+import { Listing } from "../../helpers/gqlTypes";
+import { useNavigate, useParams } from "react-router";
 
-export const CreateListingComponent = () => {
-  const GET_CATEGORIES = gql`
-    query getCategories {
-      categories {
-        id
-        name
-        urlName
-        subcategory {
-          id
-          name
-          urlName
-        }
-      }
-    }
-  `;
-
-  type Category = {
-    id: Number;
-    name: String;
-    urlName: String;
-    subcategory: SubCategory[];
-  };
-
-  type SubCategory = {
-    id: Number;
-    name: String;
-    urlName: String;
-  };
-
+export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
   let subcategories: SubCategory[] = [];
 
   const categoryQuery = useQuery(GET_CATEGORIES);
@@ -79,7 +55,7 @@ export const CreateListingComponent = () => {
         .catch((err) => console.log(err));
     };
 
-    const [title, setTitle] = useState("");
+    const [title, setTitle] = useState(listing ? listing.title : "");
     const [description, setDescription] = useState("");
     const [price, setPrice] = useState("");
     const [isGold, setIsGold] = useState(false);
@@ -222,14 +198,12 @@ export const CreateListingComponent = () => {
               ></input>
             )}
             <LabledTextInput
-              className={formFieldClass}
               label="Title"
               placeholder="Title"
               onChange={onNameChange}
               value={title}
             />
             <LabledTextInput
-              className={formFieldClass}
               label="Price"
               charLimit={12}
               placeholder="Price"
@@ -237,7 +211,6 @@ export const CreateListingComponent = () => {
               value={price}
             />
             <LabledTextInput
-              className={formFieldClass}
               label="Description"
               placeholder="Description"
               charLimit={200}
@@ -253,7 +226,6 @@ export const CreateListingComponent = () => {
               {description.length + "/200"}
             </div>
             <LabledSelect
-              className={formFieldClass}
               onChange={onCategoryChange}
               list={categories}
               nameId="name"
@@ -261,7 +233,6 @@ export const CreateListingComponent = () => {
               label="Category"
             />
             <LabledSelect
-              className={formFieldClass}
               list={subcategories}
               nameId="name"
               valueId="id"

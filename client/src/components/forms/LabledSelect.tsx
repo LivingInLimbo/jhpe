@@ -15,6 +15,7 @@ type props = {
   valueId: string;
   nameId: string;
   label?: string;
+  margin?: string;
 };
 
 export const LabledSelect = ({
@@ -28,8 +29,9 @@ export const LabledSelect = ({
   valueId = "",
   nameId = "",
   label = "",
+  margin = "mb-4",
 }: props) => (
-  <div className={className}>
+  <div className={`${className} ${margin}`}>
     <label className="block font-medium text-sm mb-1">
       {label}
       {required && <span className="text-red-600 ml-0.5">*</span>}

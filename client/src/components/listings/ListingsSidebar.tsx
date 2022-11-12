@@ -3,23 +3,11 @@ import { useQuery, gql } from "@apollo/client";
 import { useErrorHandler } from "react-error-boundary";
 import { useSearchParams } from "react-router-dom";
 import { addParam } from "../../helpers/searchParamsHelpers";
+import { GET_CATEGORIES } from "../../helpers/gqlQueries";
+import { Category, SubCategory } from "../../helpers/gqlTypes";
 
 export const ListingsSidebar = memo(() => {
-  const query = gql`
-    query getCategories {
-      categories {
-        id
-        urlName
-        name
-        subcategory {
-          id
-          urlName
-          name
-        }
-      }
-    }
-  `;
-  const { data, loading, error } = useQuery(query);
+  const { data, loading, error } = useQuery(GET_CATEGORIES);
   useErrorHandler(error);
 
   const [params, setParams] = useSearchParams();
@@ -44,7 +32,7 @@ export const ListingsSidebar = memo(() => {
     <div className="w-[128px] mr-8">
       <div className="text-lg font-bold mb-2">Category</div>
       {!loading &&
-        data.categories.map((category: any) => (
+        data.categories.map((category: Category) => (
           <div className="flex flex-col w-full font-light">
             <div
               className={`${sideBarItemClass} ${
@@ -60,7 +48,7 @@ export const ListingsSidebar = memo(() => {
             </div>
 
             <div className="ml-4">
-              {category.subcategory.map((subcategory: any) => (
+              {category.subcategory.map((subcategory: SubCategory) => (
                 <div
                   className={`${sideBarItemClass} ${
                     params.get("category") == subcategory.urlName

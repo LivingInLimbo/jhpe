@@ -4,8 +4,9 @@ import { Spinner } from "../app/Spinner";
 import { useNavigate } from "react-router";
 import { useParams } from "react-router";
 import { ImageCarousel } from "../createListing/ImageCarousel";
+import { Listing } from "../../helpers/gqlTypes";
 import { homeUrl } from "../../config";
-import { Listing } from "./ListingCard";
+import { GET_SINGLE_LISTING } from "../../helpers/gqlQueries";
 
 export const SingleListingComponent = () => {
   let navigate = useNavigate();
@@ -15,35 +16,10 @@ export const SingleListingComponent = () => {
     navigate("/home");
   }
 
-  const query = gql`
-    query getListing($id: Int) {
-      getListing(id: $id) {
-        id
-        title
-        description
-        price
-        category {
-          name
-        }
-        subcategory {
-          name
-        }
-        images {
-          name
-        }
-        user {
-          id
-          email
-          firstName
-          lastName
-          isGold
-        }
-      }
-    }
-  `;
-
   let listing: Listing | undefined;
-  const { data, loading, error } = useQuery(query, { variables: { id } });
+  const { data, loading, error } = useQuery(GET_SINGLE_LISTING, {
+    variables: { id },
+  });
   if (data && !data.getListing) {
     navigate("/home");
   } else if (data) {

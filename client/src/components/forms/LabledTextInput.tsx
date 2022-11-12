@@ -12,6 +12,7 @@ export const LabledTextInput = ({
   placeholder = "",
   charLimit = 50,
   required = false,
+  margin = "mb-4",
 }) => {
   const onInputChange = (event: any) => {
     const value = event.target.value;
@@ -22,9 +23,9 @@ export const LabledTextInput = ({
     }
   };
 
-  const inputClass = `shadow-sm appearance-none border ${
+  const inputClass = `${margin} shadow-sm appearance-none border ${
     needsFill ? "border-red-600" : "border-gray-300 hover:border-gray-500"
-  }  text-sm text-gray-700 rounded w-full h-auto py-2 px-3 font-light leading-tight focus:outline-none  focus:border-gray-500`;
+  }  text-sm text-gray-700 rounded w-full h-auto py-2 px-3 font-light leading-tight focus:outline-none focus:border-gray-500`;
   return (
     <div className={`${className}`}>
       {label && (

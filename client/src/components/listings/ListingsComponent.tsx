@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { gql, useQuery } from "@apollo/client";
 import { Spinner } from "../app/Spinner";
 import { ListingCard } from "./ListingCard";
-import type { Listing } from "./ListingCard";
+import { Listing } from "../../helpers/gqlTypes";
 import { ListingBatch } from "./ListingBatch";
 import { ColorButton } from "../forms/ColorButton";
 import { useSearchParams } from "react-router-dom";

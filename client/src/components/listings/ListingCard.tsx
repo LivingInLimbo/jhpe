@@ -1,31 +1,6 @@
 import { useState } from "react";
 import { homeUrl } from "../../config";
-
-export type Listing = {
-  id: Number;
-  title: String;
-  description: String;
-  price: number;
-  category: {
-    id?: Number;
-    name: String;
-  };
-  subcategory: {
-    id?: Number;
-    name: String;
-  };
-  images: {
-    name: string;
-  }[];
-  user: {
-    id: Number;
-    phone?: String;
-    email: String;
-    firstName?: String;
-    lastName?: String;
-    isGold?: Boolean;
-  };
-};
+import { Listing } from "../../helpers/gqlTypes";
 
 export const ListingCard = ({ listing }: { listing: Listing }) => {
   return (
