@@ -7,29 +7,18 @@ import { ImageCarousel } from "../createListing/ImageCarousel";
 import { Listing } from "../../helpers/gqlTypes";
 import { homeUrl } from "../../config";
 import { GET_SINGLE_LISTING } from "../../helpers/gqlQueries";
+import { ColorButton } from "../forms/ColorButton";
 
-export const SingleListingComponent = () => {
+export const SingleListingComponent = ({
+  listing,
+  currUserOwns,
+}: {
+  listing: Listing;
+  currUserOwns: boolean;
+}) => {
   let navigate = useNavigate();
-  const { listingId } = useParams();
-  let id = parseInt(listingId || "");
-  if (!id) {
-    navigate("/home");
-  }
 
-  let listing: Listing | undefined;
-  const { data, loading, error } = useQuery(GET_SINGLE_LISTING, {
-    variables: { id },
-  });
-  if (data && !data.getListing) {
-    navigate("/home");
-  } else if (data) {
-    listing = data.getListing;
-    console.log(listing);
-  }
-
-  return !listing ? (
-    <Spinner />
-  ) : (
+  return (
     <div className="w-full flex flex-col md:flex-row gap-4">
       <ImageCarousel
         imgSrcs={listing.images.map(
@@ -64,6 +53,17 @@ export const SingleListingComponent = () => {
 
           {listing.user.email}
         </div>
+        {currUserOwns && (
+          <div className="w-full mt-12">
+            <ColorButton
+              onClick={() => navigate(`/edit/${listing?.id}`)}
+              className="mb-4 text-lg w-full"
+              type="green"
+              label="Edit"
+            />
+            <ColorButton className="text-lg w-full" type="red" label="Delete" />
+          </div>
+        )}
       </div>
     </div>
   );

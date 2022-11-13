@@ -15,8 +15,8 @@ export const ListingCard = ({ listing }: { listing: Listing }) => {
         />
       </div>
       <div className="flex flex-col mt-4 ml-0.5">
+        <div className="text-green-700">${listing.price.toLocaleString()}</div>
         <div className="font-bold">{listing.title}</div>
-        <div className="text-green-700">${listing.price}</div>
       </div>
     </div>
   );

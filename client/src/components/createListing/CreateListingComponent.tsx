@@ -16,6 +16,7 @@ import { Listing } from "../../helpers/gqlTypes";
 import { useNavigate, useParams } from "react-router";
 
 export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
+  let navigate = useNavigate();
   let subcategories: SubCategory[] = [];
 
   const categoryQuery = useQuery(GET_CATEGORIES);
@@ -31,13 +32,14 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
   }) => {
     const [cookies, setCookie] = useCookies();
     const submitForm = (e: any) => {
+      console.log("lmfao");
       e.preventDefault();
       const formData = new FormData();
       files.forEach((file: Blob) => {
         formData.append("images[]", file);
       });
       formData.append("title", title);
-      formData.append("price", `${price}`);
+      formData.append("price", `${price.split(/,|\$/).join("")}`);
       formData.append("isGold", `${isGold}`);
       formData.append("description", description);
       formData.append("categoryId", `${category.id}`);
@@ -50,7 +52,7 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
         body: formData,
       })
         .then((res) => {
-          console.log(res);
+          navigate("/account");
         })
         .catch((err) => console.log(err));
     };
@@ -85,8 +87,7 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
         setPrice("");
       } else {
         const pureNumber = value.split(/,|\$/).join("");
-        console.log(parseInt(pureNumber));
-        if (parseInt(pureNumber) != NaN) {
+        if (parseInt(pureNumber)) {
           let newValue = `$${parseInt(pureNumber).toLocaleString()}`;
           setPrice(newValue);
         }
@@ -242,6 +243,7 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
               className="self-center"
               label="Create Listing"
               type="green"
+              buttonType="submit"
             />
           </form>
         </div>

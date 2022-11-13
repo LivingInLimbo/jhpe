@@ -103,6 +103,7 @@ const typeDefs = gql`
     ): [Listing]
     getListing(id: Int): Listing
     getUserListing(id: Int): Listing
+    checkUserOwnsListing(id: Int): Boolean
     getListingCount(category: String, search: String, gold: Boolean): Int
     getListingsByUser: [Listing]
     checkToken: Boolean
@@ -201,7 +202,11 @@ const resolvers = {
 
       return listings;
     },
-    getListing: async (parent: undefined, { id }: { id: number }) => {
+    getListing: async (
+      parent: undefined,
+      { id }: { id: number },
+      context: { user: UserType }
+    ) => {
       const listing = await db.getRepository(Listing).findOne({
         where: { id: id },
       });
@@ -219,6 +224,26 @@ const resolvers = {
         where: { id: id, user: { id: context.user.id } },
       });
       return listing;
+    },
+    checkUserOwnsListing: async (
+      parent: undefined,
+      { id }: { id: number },
+      context: { user: UserType }
+    ) => {
+      console.log(context.user);
+      if (!context.user) {
+        return false;
+      } else {
+        let listing = await db
+          .getRepository(Listing)
+          .findOne({ where: { id: id } });
+        console.log(listing.user.id, context.user.id);
+        if (context.user.id == listing.user.id) {
+          return true;
+        } else {
+          return false;
+        }
+      }
     },
     getListingCount: async (
       parent: undefined,
@@ -302,7 +327,7 @@ const resolvers = {
         isGold: Boolean;
       }) => {
         const token = jwt.sign(
-          { email: user.email, userId: user.id, gold: user.isGold },
+          { email: user.email, id: user.id, gold: user.isGold },
           config.JWT_KEY,
           {
             expiresIn: "12h",
@@ -351,6 +376,7 @@ const startServer = async () => {
       const isGold = (req.body.isGold || "false") == "true";
       const category = parseInt(req.body.categoryId);
       const userId = req.user.userId;
+
       if (!category) {
         res.status(400).json("no category");
       }
@@ -358,6 +384,7 @@ const startServer = async () => {
       if (!subcategory) {
         res.status(400).json("no subcategory");
       }
+      console.log(category, subcategory);
       const queryBuilder = db.createQueryBuilder();
       const listing = db
         .getRepository(Listing)
@@ -380,6 +407,7 @@ const startServer = async () => {
         .relation(Listing, "images")
         .of(listing.id)
         .add(listingImages);
+      res.status(200).json({ message: "success" });
     }
   );
 

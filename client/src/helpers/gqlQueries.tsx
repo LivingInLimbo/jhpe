@@ -24,6 +24,7 @@ export const GET_SINGLE_LISTING = gql`
         isGold
       }
     }
+    checkUserOwnsListing(id: $id)
   }
 `;
 
