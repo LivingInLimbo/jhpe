@@ -22,6 +22,7 @@ export type User = {
 
 export type Listing = {
   id: number;
+  isGold: boolean;
   title: string;
   description: string;
   price: number;

@@ -5,6 +5,7 @@ import { useQuery } from "@apollo/client";
 import { Listing } from "../helpers/gqlTypes";
 import { Spinner } from "../components/app/Spinner";
 import { GET_SINGLE_LISTING } from "../helpers/gqlQueries";
+import { useErrorHandler } from "react-error-boundary";
 
 const SingleListing = () => {
   let navigate = useNavigate();
@@ -17,6 +18,7 @@ const SingleListing = () => {
   const { data, loading, error } = useQuery(GET_SINGLE_LISTING, {
     variables: { id },
   });
+  useErrorHandler(error);
   if (data && !data.getListing) {
     navigate("/home");
   }

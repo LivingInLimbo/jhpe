@@ -6,7 +6,7 @@ import { Spinner } from "../app/Spinner";
 import { LabledTextInput } from "../forms/LabledTextInput";
 import { LabledSelect } from "../forms/LabledSelect";
 import { ColorButton } from "../forms/ColorButton";
-import { IoAdd } from "react-icons/io5";
+import { IoAdd, IoTrash } from "react-icons/io5";
 import { ImageCarousel } from "./ImageCarousel";
 import Compressor from "compressorjs";
 import { useCookies } from "react-cookie";
@@ -14,6 +14,8 @@ import { GET_CATEGORIES, GET_SINGLE_LISTING } from "../../helpers/gqlQueries";
 import { Category, SubCategory } from "../../helpers/gqlTypes";
 import { Listing } from "../../helpers/gqlTypes";
 import { useNavigate, useParams } from "react-router";
+import { homeUrl } from "../../config";
+import { IoTrashOutline } from "react-icons/io5";
 
 export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
   let navigate = useNavigate();
@@ -35,8 +37,13 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
       console.log("lmfao");
       e.preventDefault();
       const formData = new FormData();
-      files.forEach((file: Blob) => {
-        formData.append("images[]", file);
+      images.forEach((image: createListingImage) => {
+        if (image.file) {
+          formData.append("images[]", image.file);
+        }
+      });
+      images.forEach((image: createListingImage) => {
+        formData.append("sources[]", image.src);
       });
       formData.append("title", title);
       formData.append("price", `${price.split(/,|\$/).join("")}`);
@@ -58,12 +65,24 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
     };
 
     const [title, setTitle] = useState(listing ? listing.title : "");
-    const [description, setDescription] = useState("");
-    const [price, setPrice] = useState("");
-    const [isGold, setIsGold] = useState(false);
-    const [category, setCategory] = useState(categories[0]);
+    const [description, setDescription] = useState(
+      listing ? listing.description : ""
+    );
+    const [price, setPrice] = useState(
+      listing ? `$${listing.price.toLocaleString()}` : ""
+    );
+    const [isGold, setIsGold] = useState(listing ? listing.isGold : false);
+
+    let listingCategory =
+      categories.find(
+        (category: Category) => category.id == listing?.category.id
+      ) || categories[0];
+
+    const [category, setCategory] = useState(listingCategory);
     const [subCategory, setSubCategory] = useState(
-      categories[0].subcategory[0]
+      listingCategory.subcategory.find(
+        (sc) => sc.id == listing?.subcategory.id
+      ) || listingCategory.subcategory[0]
     );
 
     const [errorMessage, setErrorMessage] = useState("");
@@ -104,8 +123,23 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
       }
     };
 
-    const [imgSrcs, setImgSrcs] = useState<string[]>([]);
+    const [imgSrcs, setImgSrcs] = useState<string[]>(
+      listing
+        ? listing.images.map((img) => `${homeUrl}/uploads/${img.name}`)
+        : []
+    );
     const [files, setFiles] = useState<Blob[]>([]);
+    type createListingImage = {
+      file: Blob | null;
+      src: string;
+    };
+    const [images, setImages] = useState<createListingImage[]>(
+      listing
+        ? listing.images.map((image: { name: string }) => {
+            return { src: `${homeUrl}/uploads/${image.name}`, file: null };
+          })
+        : []
+    );
 
     const onSelectFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
@@ -137,28 +171,33 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
             });
           };
 
-          const results: Blob[] = await Promise.all(
+          const files: Blob[] = await Promise.all(
             Array.from(e.target.files).map(async (file: File) => {
               const fileContents = await handleFileChosen(file);
               return fileContents;
             })
           );
 
-          console.log(results);
+          const uploadedImages = files.map((file) => {
+            return { file, src: URL.createObjectURL(file) };
+          });
 
-          const imageUrls = results.map((result) =>
-            URL.createObjectURL(result)
-          );
-
-          setFiles(results);
-          setImgSrcs(imageUrls);
-
-          //setImgSrcs(results);
+          setImages([...images, ...uploadedImages]);
         }
       }
     };
 
-    const formFieldClass = "w-full mb-4";
+    const removeImage = (removeImage: createListingImage) => {
+      const removeIdx = images.findIndex((image) => image === removeImage);
+      if (removeIdx > -1) {
+        let newImageArray = images.slice();
+        newImageArray.splice(removeIdx, 1);
+        setImages(newImageArray);
+      }
+    };
+
+    const createListingImageClass =
+      "absolute top-0 w-full h-full z-1 flex items-center justify-center border border-transparent text-red-600 cursor-pointer rounded-md opacity-0 transition-all duration-100 hover:opacity-100 hover:border-red-600";
 
     return categoryQuery.loading ? (
       <Spinner />
@@ -181,12 +220,19 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
           </div>
 
           <div className="flex flex-wrap justify-center gap-4 mb-4">
-            {imgSrcs.map((imgSrc: string) => (
-              <img
-                key={imgSrc}
-                className="w-14 h-14 object-contain border rounded-md"
-                src={imgSrc}
-              ></img>
+            {images.map((image: createListingImage) => (
+              <div key={image.src} className="relative">
+                <div
+                  onClick={() => removeImage(image)}
+                  className={createListingImageClass}
+                >
+                  <IoTrashOutline size={30} />
+                </div>
+                <img
+                  className="w-14 h-14 object-contain border rounded-md"
+                  src={image.src}
+                ></img>
+              </div>
             ))}
           </div>
 
@@ -250,7 +296,7 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
         <div className="flex flex-col w-full lg:flex-row p-4 border-t md:border-l md:border-t-0 border-gray-400">
           <div className="lg:w-full mb-4">
             <ImageCarousel
-              imgSrcs={imgSrcs}
+              imgSrcs={images.map((image: createListingImage) => image.src)}
               defaultImage={
                 <div className="flex w-full h-full justify-center items-center text-gray-400 text-3xl">
                   No Images

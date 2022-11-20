@@ -4,6 +4,7 @@ export const GET_SINGLE_LISTING = gql`
   query getListing($id: Int) {
     getListing(id: $id) {
       id
+      isGold
       title
       description
       price

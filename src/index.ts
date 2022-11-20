@@ -79,6 +79,7 @@ const typeDefs = gql`
 
   type Listing {
     id: Int
+    isGold: Boolean
     title: String
     description: String
     price: Int
