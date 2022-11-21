@@ -43,7 +43,9 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
         }
       });
       images.forEach((image: createListingImage) => {
-        formData.append("sources[]", image.src);
+        if (image.id) {
+          formData.append("imageIds[]", `${image.id}`);
+        }
       });
       formData.append("title", title);
       formData.append("price", `${price.split(/,|\$/).join("")}`);
@@ -51,7 +53,10 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
       formData.append("description", description);
       formData.append("categoryId", `${category.id}`);
       formData.append("subCategoryId", `${subCategory.id}`);
-      fetch("/createListing", {
+      if (listing) {
+        formData.append("id", `${listing.id}`);
+      }
+      fetch(listing ? "/editListing" : "/createListing", {
         method: "POST",
         headers: {
           authorization: `Bearer ${cookies.userInfo}`,
@@ -123,20 +128,19 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
       }
     };
 
-    const [imgSrcs, setImgSrcs] = useState<string[]>(
-      listing
-        ? listing.images.map((img) => `${homeUrl}/uploads/${img.name}`)
-        : []
-    );
-    const [files, setFiles] = useState<Blob[]>([]);
     type createListingImage = {
+      id: number | null;
       file: Blob | null;
       src: string;
     };
     const [images, setImages] = useState<createListingImage[]>(
       listing
-        ? listing.images.map((image: { name: string }) => {
-            return { src: `${homeUrl}/uploads/${image.name}`, file: null };
+        ? listing.images.map((image: { id: number; name: string }) => {
+            return {
+              id: image.id,
+              src: `${homeUrl}/uploads/${image.name}`,
+              file: null,
+            };
           })
         : []
     );
@@ -179,7 +183,7 @@ export const CreateListingComponent = ({ listing }: { listing?: Listing }) => {
           );
 
           const uploadedImages = files.map((file) => {
-            return { file, src: URL.createObjectURL(file) };
+            return { id: null, file, src: URL.createObjectURL(file) };
           });
 
           setImages([...images, ...uploadedImages]);

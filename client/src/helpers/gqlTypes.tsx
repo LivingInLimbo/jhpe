@@ -35,6 +35,7 @@ export type Listing = {
     name: string;
   };
   images: {
+    id: number;
     name: string;
   }[];
   user: User;

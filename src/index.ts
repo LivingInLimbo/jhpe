@@ -14,6 +14,7 @@ import { config } from "./config";
 import { OAuth2Client } from "google-auth-library";
 import { checkAuth, checkAuthMiddleware } from "./helpers/checkAuth";
 import { ListingImage } from "./database/entity/ListingImage";
+const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const jwt = require("jsonwebtoken");
 const { ApolloServer, gql } = require("apollo-server-express");
@@ -90,6 +91,7 @@ const typeDefs = gql`
   }
 
   type ListingImage {
+    id: Int
     name: String
   }
 
@@ -385,7 +387,6 @@ const startServer = async () => {
       if (!subcategory) {
         res.status(400).json("no subcategory");
       }
-      console.log(category, subcategory);
       const queryBuilder = db.createQueryBuilder();
       const listing = db
         .getRepository(Listing)
@@ -400,6 +401,66 @@ const startServer = async () => {
         .of(listing.id)
         .set(subcategory);
       await queryBuilder.relation(Listing, "user").of(listing.id).set(userId);
+      const listingImages = req.files.map((file: any) =>
+        db.getRepository(ListingImage).create({ name: file.filename })
+      );
+      await db.getRepository(ListingImage).save(listingImages);
+      await queryBuilder
+        .relation(Listing, "images")
+        .of(listing.id)
+        .add(listingImages);
+      res.status(200).json({ message: "success" });
+    }
+  );
+
+  app.post(
+    "/editListing",
+    checkAuthMiddleware,
+    upload.array("images[]", 10),
+    async (req: any, res: Express.Response) => {
+      const title = req.body.title || "";
+      const price = parseInt(req.body.price) || 0;
+      const description = req.body.description || "";
+      const isGold = (req.body.isGold || "false") == "true";
+      const category = parseInt(req.body.categoryId);
+      const id = parseInt(req.body.id);
+      const imageIds = req.body.imageIds || [];
+      const userId = req.user.userId;
+
+      if (!category) {
+        res.status(400).json("no category");
+      }
+      const subcategory = parseInt(req.body.subCategoryId);
+      if (!subcategory) {
+        res.status(400).json("no subcategory");
+      }
+      const queryBuilder = db.createQueryBuilder();
+      await db
+        .getRepository(Listing)
+        .update({ id: id }, { title, price, description, isGold });
+      let listing = await db.getRepository(Listing).findOneBy({ id: id });
+      await queryBuilder
+        .relation(Listing, "category")
+        .of(listing.id)
+        .set(category);
+      await queryBuilder
+        .relation(Listing, "subcategory")
+        .of(listing.id)
+        .set(subcategory);
+      listing.images.forEach(async (image: ListingImage) => {
+        let idx = imageIds.findIndex((id: string) => parseInt(id) == image.id);
+        if (idx < 0) {
+          fs.unlink(`./uploads/${image.name}`, async (err: any) => {
+            if (err) {
+              console.log(err);
+            }
+            await queryBuilder
+              .relation(Listing, "images")
+              .of(listing.id)
+              .remove(image.id);
+          });
+        }
+      });
       const listingImages = req.files.map((file: any) =>
         db.getRepository(ListingImage).create({ name: file.filename })
       );

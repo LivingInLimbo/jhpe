@@ -15,6 +15,7 @@ export const GET_SINGLE_LISTING = gql`
         name
       }
       images {
+        id
         name
       }
       user {
@@ -43,6 +44,7 @@ export const GET_USER_LISTING = gql`
         name
       }
       images {
+        id
         name
       }
       user {
