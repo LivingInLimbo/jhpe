@@ -29,7 +29,7 @@ export const ListingsSidebar = memo(() => {
   ];
 
   return (
-    <div className="w-[128px] mr-8">
+    <div className="fixed top-20 w-[128px]">
       <div className="text-lg font-bold mb-2">Category</div>
       {!loading &&
         data.categories.map((category: Category) => (

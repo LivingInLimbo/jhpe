@@ -72,3 +72,9 @@ export const GET_CATEGORIES = gql`
     }
   }
 `;
+
+export const DELETE_LISTING = gql`
+  mutation deleteListing($id: Int) {
+    deleteListing(id: $id)
+  }
+`;

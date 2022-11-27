@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { gql, useQuery } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { Spinner } from "../app/Spinner";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { useParams } from "react-router";
 import { ImageCarousel } from "../createListing/ImageCarousel";
 import { Listing } from "../../helpers/gqlTypes";
 import { homeUrl } from "../../config";
-import { GET_SINGLE_LISTING } from "../../helpers/gqlQueries";
+import { DELETE_LISTING } from "../../helpers/gqlQueries";
 import { ColorButton } from "../forms/ColorButton";
 
 export const SingleListingComponent = ({
@@ -17,8 +17,14 @@ export const SingleListingComponent = ({
   currUserOwns: boolean;
 }) => {
   let navigate = useNavigate();
+  const [deleteListing, { data, loading, error }] = useMutation(
+    DELETE_LISTING,
+    { variables: { id: listing.id } }
+  );
 
-  return (
+  return data && data.deleteListing ? (
+    <Navigate to="/account" />
+  ) : (
     <div className="w-full flex flex-col md:flex-row gap-4">
       <ImageCarousel
         imgSrcs={listing.images.map(
@@ -61,7 +67,12 @@ export const SingleListingComponent = ({
               type="green"
               label="Edit"
             />
-            <ColorButton className="text-lg w-full" type="red" label="Delete" />
+            <ColorButton
+              onClick={deleteListing}
+              className="text-lg w-full"
+              type="red"
+              label="Delete"
+            />
           </div>
         )}
       </div>

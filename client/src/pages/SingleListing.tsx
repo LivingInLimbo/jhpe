@@ -1,6 +1,6 @@
 import { Container } from "../components/app/Container";
 import { SingleListingComponent } from "../components/listings/SingleListingComponent";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Navigate } from "react-router";
 import { useQuery } from "@apollo/client";
 import { Listing } from "../helpers/gqlTypes";
 import { Spinner } from "../components/app/Spinner";
@@ -19,12 +19,11 @@ const SingleListing = () => {
     variables: { id },
   });
   useErrorHandler(error);
-  if (data && !data.getListing) {
-    navigate("/home");
-  }
 
   return loading ? (
     <Spinner />
+  ) : data && !data.getListing ? (
+    <Navigate to="/home" />
   ) : (
     <Container>
       <SingleListingComponent

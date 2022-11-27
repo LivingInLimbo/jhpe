@@ -120,6 +120,7 @@ const typeDefs = gql`
 
   type Mutation {
     addUser(credential: String): AddUserReturn
+    deleteListing(id: Int): Boolean
   }
 `;
 
@@ -196,7 +197,7 @@ const resolvers = {
         )
         .orderBy(`${orderBy}`, dir == "asc" ? "ASC" : "DESC")
         .skip(offset || 0)
-        .take(1)
+        .take(25)
         .getMany()
         .catch((e) => console.log(e));
 
@@ -213,6 +214,7 @@ const resolvers = {
       const listing = await db.getRepository(Listing).findOne({
         where: { id: id },
       });
+      console.log(listing);
       return listing;
     },
     getUserListing: async (
@@ -226,6 +228,7 @@ const resolvers = {
       const listing = await db.getRepository(Listing).findOne({
         where: { id: id, user: { id: context.user.id } },
       });
+      console.log(listing);
       return listing;
     },
     checkUserOwnsListing: async (
@@ -233,15 +236,13 @@ const resolvers = {
       { id }: { id: number },
       context: { user: UserType }
     ) => {
-      console.log(context.user);
       if (!context.user) {
         return false;
       } else {
         let listing = await db
           .getRepository(Listing)
           .findOne({ where: { id: id } });
-        console.log(listing.user.id, context.user.id);
-        if (context.user.id == listing.user.id) {
+        if (listing && context.user.id == listing.user.id) {
           return true;
         } else {
           return false;
@@ -361,6 +362,25 @@ const resolvers = {
         });
         return { token: token, isGold: user.isGold };
       }
+    },
+    deleteListing: (
+      parent: undefined,
+      { id }: { id: number },
+      context: { user: UserType }
+    ) => {
+      if (!context.user) {
+        return new AuthenticationError("Token expired", { status: 401 });
+      }
+      return db
+        .getRepository(Listing)
+        .delete({ id: id })
+        .then(() => {
+          return true;
+        })
+        .catch((err) => {
+          console.log(err);
+          return false;
+        });
     },
   },
 };

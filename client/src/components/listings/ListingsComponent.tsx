@@ -15,7 +15,7 @@ export const ListingsComponent = () => {
   const [offset, setOffset] = useState(0);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const batchCount = 1;
+  const batchCount = 25;
 
   const incrementOffset = () => {
     setOffset(offset + batchCount);
@@ -70,13 +70,7 @@ export const ListingsComponent = () => {
 
   useEffect(() => {
     if (!loading) {
-      if (
-        window.innerHeight == document.body.offsetHeight &&
-        offset != data.getListingCount
-      ) {
-        addListingBatch(offset + batchCount);
-        incrementOffset();
-      } else if (offset != 0 && offset != data.getListingCount) {
+      if (offset != 0 && offset != data.getListingCount) {
         addListingBatch(offset);
       }
     }
@@ -87,7 +81,7 @@ export const ListingsComponent = () => {
   ) : (
     <div className="flex w-full">
       <ListingsSidebar />
-      <div className="flex flex-col w-full">
+      <div className="flex flex-col w-full ml-[128px]">
         <CountAndSearchDisplay search={search} category={category} />
         <div className="grid w-full gap-2 auto-rows-fr grid-cols-3">
           {listings}
